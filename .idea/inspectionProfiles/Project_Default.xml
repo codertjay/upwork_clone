@@ -1,0 +1,147 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="DuplicatedCode" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <Languages>
+        <language minSize="167" name="Python" />
+      </Languages>
+    </inspection_tool>
+    <inspection_tool class="HtmlUnknownAttribute" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myValues">
+        <value>
+          <list size="1">
+            <item index="0" class="java.lang.String" itemvalue="+paypal_client_id+" />
+          </list>
+        </value>
+      </option>
+      <option name="myCustomValuesEnabled" value="true" />
+    </inspection_tool>
+    <inspection_tool class="HtmlUnknownTag" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="myValues">
+        <value>
+          <list size="7">
+            <item index="0" class="java.lang.String" itemvalue="nobr" />
+            <item index="1" class="java.lang.String" itemvalue="noembed" />
+            <item index="2" class="java.lang.String" itemvalue="comment" />
+            <item index="3" class="java.lang.String" itemvalue="noscript" />
+            <item index="4" class="java.lang.String" itemvalue="embed" />
+            <item index="5" class="java.lang.String" itemvalue="script" />
+            <item index="6" class="java.lang.String" itemvalue="tr" />
+          </list>
+        </value>
+      </option>
+      <option name="myCustomValuesEnabled" value="true" />
+    </inspection_tool>
+    <inspection_tool class="JSXNamespaceValidation" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <scope name="Project Files" level="WEAK WARNING" enabled="true">
+        <option name="importPopup" value="true" />
+      </scope>
+    </inspection_tool>
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="75">
+            <item index="0" class="java.lang.String" itemvalue="djangorestframework-simplejwt" />
+            <item index="1" class="java.lang.String" itemvalue="celery" />
+            <item index="2" class="java.lang.String" itemvalue="kombu" />
+            <item index="3" class="java.lang.String" itemvalue="click" />
+            <item index="4" class="java.lang.String" itemvalue="Django" />
+            <item index="5" class="java.lang.String" itemvalue="autopep8" />
+            <item index="6" class="java.lang.String" itemvalue="rsa" />
+            <item index="7" class="java.lang.String" itemvalue="pyaes" />
+            <item index="8" class="java.lang.String" itemvalue="argcomplete" />
+            <item index="9" class="java.lang.String" itemvalue="packaging" />
+            <item index="10" class="java.lang.String" itemvalue="pycodestyle" />
+            <item index="11" class="java.lang.String" itemvalue="pyasn1" />
+            <item index="12" class="java.lang.String" itemvalue="requests" />
+            <item index="13" class="java.lang.String" itemvalue="toml" />
+            <item index="14" class="java.lang.String" itemvalue="Telethon" />
+            <item index="15" class="java.lang.String" itemvalue="pipx" />
+            <item index="16" class="java.lang.String" itemvalue="configparser" />
+            <item index="17" class="java.lang.String" itemvalue="certifi" />
+            <item index="18" class="java.lang.String" itemvalue="charset-normalizer" />
+            <item index="19" class="java.lang.String" itemvalue="userpath" />
+            <item index="20" class="java.lang.String" itemvalue="urllib3" />
+            <item index="21" class="java.lang.String" itemvalue="pyparsing" />
+            <item index="22" class="java.lang.String" itemvalue="idna" />
+            <item index="23" class="java.lang.String" itemvalue="stripe" />
+            <item index="24" class="java.lang.String" itemvalue="amqp" />
+            <item index="25" class="java.lang.String" itemvalue="vine" />
+            <item index="26" class="java.lang.String" itemvalue="billiard" />
+            <item index="27" class="java.lang.String" itemvalue="joblib" />
+            <item index="28" class="java.lang.String" itemvalue="nltk" />
+            <item index="29" class="java.lang.String" itemvalue="python-dateutil" />
+            <item index="30" class="java.lang.String" itemvalue="psycopg2-binary" />
+            <item index="31" class="java.lang.String" itemvalue="defusedxml" />
+            <item index="32" class="java.lang.String" itemvalue="pycparser" />
+            <item index="33" class="java.lang.String" itemvalue="tinycss2" />
+            <item index="34" class="java.lang.String" itemvalue="redis" />
+            <item index="35" class="java.lang.String" itemvalue="django-post-office" />
+            <item index="36" class="java.lang.String" itemvalue="bleach" />
+            <item index="37" class="java.lang.String" itemvalue="oauthlib" />
+            <item index="38" class="java.lang.String" itemvalue="order" />
+            <item index="39" class="java.lang.String" itemvalue="django-celery-beat" />
+            <item index="40" class="java.lang.String" itemvalue="django-crispy-forms" />
+            <item index="41" class="java.lang.String" itemvalue="wrapt" />
+            <item index="42" class="java.lang.String" itemvalue="asgiref" />
+            <item index="43" class="java.lang.String" itemvalue="cryptography" />
+            <item index="44" class="java.lang.String" itemvalue="whitenoise" />
+            <item index="45" class="java.lang.String" itemvalue="gunicorn" />
+            <item index="46" class="java.lang.String" itemvalue="scinum" />
+            <item index="47" class="java.lang.String" itemvalue="python3-openid" />
+            <item index="48" class="java.lang.String" itemvalue="regex" />
+            <item index="49" class="java.lang.String" itemvalue="django-allauth" />
+            <item index="50" class="java.lang.String" itemvalue="PyJWT" />
+            <item index="51" class="java.lang.String" itemvalue="async-timeout" />
+            <item index="52" class="java.lang.String" itemvalue="python-crontab" />
+            <item index="53" class="java.lang.String" itemvalue="jsonfield" />
+            <item index="54" class="java.lang.String" itemvalue="cffi" />
+            <item index="55" class="java.lang.String" itemvalue="wcwidth" />
+            <item index="56" class="java.lang.String" itemvalue="numpy" />
+            <item index="57" class="java.lang.String" itemvalue="click-didyoumean" />
+            <item index="58" class="java.lang.String" itemvalue="sqlparse" />
+            <item index="59" class="java.lang.String" itemvalue="requests-oauthlib" />
+            <item index="60" class="java.lang.String" itemvalue="Deprecated" />
+            <item index="61" class="java.lang.String" itemvalue="prompt-toolkit" />
+            <item index="62" class="java.lang.String" itemvalue="googlemaps" />
+            <item index="63" class="java.lang.String" itemvalue="six" />
+            <item index="64" class="java.lang.String" itemvalue="tzdata" />
+            <item index="65" class="java.lang.String" itemvalue="tqdm" />
+            <item index="66" class="java.lang.String" itemvalue="colorama" />
+            <item index="67" class="java.lang.String" itemvalue="django-timezone-field" />
+            <item index="68" class="java.lang.String" itemvalue="python-decouple" />
+            <item index="69" class="java.lang.String" itemvalue="click-repl" />
+            <item index="70" class="java.lang.String" itemvalue="pytz" />
+            <item index="71" class="java.lang.String" itemvalue="click-plugins" />
+            <item index="72" class="java.lang.String" itemvalue="textblob" />
+            <item index="73" class="java.lang.String" itemvalue="webencodings" />
+            <item index="74" class="java.lang.String" itemvalue="Pillow" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N806" />
+          <option value="N802" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="users.serializers.*" />
+          <option value="teems_app_kid.settings.production.rave_python" />
+          <option value="brownie.SimpleStorage" />
+          <option value="brownie.*" />
+          <option value="scripts.helpful_scripts.MockV3Aggregator" />
+          <option value="contract_name" />
+          <option value="bool.get" />
+          <option value="web3.main.Web3.__await__" />
+          <option value="str.__await__" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
