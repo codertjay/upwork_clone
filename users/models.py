@@ -6,8 +6,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
-# Create your models here.
-
 class UserManager(BaseUserManager):
     """
     This is used to add extra queryset or add more functionality to the user models
@@ -56,7 +54,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     """
     # this tells django the username field because sometimes you can change it to email or username itself
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'user_type']
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'user_type']
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     email = models.EmailField(max_length=150, unique=True)

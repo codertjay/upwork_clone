@@ -1,3 +1,8 @@
 venv
 .idea
 users/migrations
+/jobs/migrations/
+/catalogues/migrations/
+/blogs/migrations/
+/messages/migrations/
+.env

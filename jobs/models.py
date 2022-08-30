@@ -1,8 +1,12 @@
 from django.db import models
 
 from catalogues.models import Category
-from django.contrib.auth.models import User
+from django.conf import settings
 
+# Create your models here.
+User = settings.AUTH_USER_MODEL
+
+#  the project stage choice is used to check the status of the job
 PROJECT_STAGE_CHOICES = (
     ("ACTIVE", "ACTIVE"),
     ("PROCESSING", "PROCESSING"),
@@ -35,8 +39,8 @@ class JobInvite(models.Model):
     The job invite enables the customer to send an invitation to  freelancers
     but i made sure if a job is deleted then the invite get deleted
     """
-    customer = models.ForeignKey(User, on_delete=models.CASCADE)
-    freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_customer")
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_freelancer")
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -62,7 +66,7 @@ class Proposal(models.Model):
     The job id would also be used to get the list of jobs the user has applied to once looping
     through the user proposals
     """
-    freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposal_freelancer")
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     proposal_stage = models.CharField(max_length=50, choices=PROPOSAL_STAGE_CHOICES)
     amount = models.FloatField()
@@ -77,8 +81,8 @@ class Review(models.Model):
 
     """
     job = models.OneToOneField(Job, on_delete=models.CASCADE)
-    freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
-    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="freelancer")
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="customer")
     # the max number would be 5 and min number is 0
     stars = models.IntegerField(default=0)
     description = models.TextField()
@@ -91,5 +95,5 @@ class SavedJob(models.Model):
     another time
     """
     freelancer = models.OneToOneField(User, on_delete=models.CASCADE)
-    saved_jobs = models.ManyToManyField(Job, blank=True, null=True)
+    saved_jobs = models.ManyToManyField(Job, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
