@@ -109,20 +109,68 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 #  Changing default django user models
 AUTH_USER_MODEL = 'users.User'
-#  custom function used to add extra functionality to the signup process
-# kind of using it to create a user just let me say the save method function
-ACCOUNT_ADAPTER = 'users.adapter.UserAdapter'
+
+# change the default auth serializer for token and get user details
+REST_AUTH_SERIALIZERS = {
+    'USER_DETAIL_SERIALIZER': 'users.serializers.UserSerializer',
+    'TOKEN_SERIALIZER': 'users.serializers.TokenSerializer',
+}
+
+#  change the default register serializer
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'users.serializers.CustomRegisterSerializer',
+}
+
+"""  
+custom function used to add extra functionality to the signup process
+kind of using it to create a user just let me say the save method function
+ """
+ACCOUNT_ADAPTER = 'users.adapters.UserAdapter'
 
 # setup for django allauth authentications
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# Not currently using allauth to manage verification
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+# for removing extra subject from message if using allauth to send mail
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 300
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 
+"""
+Configuration for email . the email backend is currently set to use post office 
+to log the mail which was sent, failed or still on queue
+"""
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+
+POST_OFFICE = {
+    """ The DEFAULT_PRIORITY enables us to perform action without celery """
+    # 'DEFAULT_PRIORITY': 'now',
+    """ The CELERY_ENABLED enables us to perform action with celery task
+     so right now i dont need to add shared_task or delay when sending mail 
+     """
+    'CELERY_ENABLED': True,
+    'MESSAGE_ID_ENABLED': True,
+    'MAX_RETRIES': 5,
+    'RETRY_INTERVAL': datetime.timedelta(minutes=15),  # Schedule to be retried 15 minutes later
+    'THREADS_PER_PROCESS': 10,
+}
+
+""" 
 #  the default rest framework setting
+
+ anon is for the AnonRateThrottle base on anonymous user
+ user is for the UserRateThrottle base on logged in user
+ ScopedRateThrottle this is just used to set custom throttle just like the authentication, monitor below
+ """
 REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
@@ -130,35 +178,38 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/min',
+        'user': '200/min',
         # the throttle is the amount of time a user can access a route in a minute
-        'authentication': '10/min',
+        'authentication': '3/min',
+        # used on route where the user is not logged in like requesting otp
+        'monitor': '3/min',
     },
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework.authentication.TokenAuthentication',
-        # currently setting the default authentication for django rest framework
+        # currently setting the default authentication for django rest framework to jwt
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ),
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
-#  telling rest framework to use jwt
+# telling rest framework to use jwt
 REST_USE_JWT = True
-#  this is used by the package djangorestframework-simplejwt==5.2.0 for providing jwt authentication
+
+"""  
+this is used by the package djangorestframework-simplejwt==5.2.0 for providing 
+jwt authentication and also modifying the time which the token expires
+"""
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=60),
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=10),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': True,
 }
 
-#  configuration for django rest auth
-REST_AUTH_SERIALIZERS = {
-    #  for authentication which serializer he should use
-    'USER_DETAIL_SERIALIZER': 'users.serializers.UserSerializer',
-    #  the serializer for the token
-    'TOKEN_SERIALIZER': 'users.serializers.TokenSerializer',
-}
+APPEND_SLASH = True
+
+#  configuration for celery
+CELERY_ENABLED = True
+CELERY_BROKER_URL = config("BROKER_URL")
+CELERY_RESULT_BACKEND = config("BROKER_URL")

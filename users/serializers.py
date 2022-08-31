@@ -1,23 +1,26 @@
 from allauth.account.adapter import get_adapter
-from users.models import User
+from users.models import User, UserProfile
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import serializers
+from rest_framework.authtoken.models import Token
+from users.models import USER_TYPE_CHOICES
+from users.tasks import login_notification_email
 
 
-# used when signing up with the url
 class CustomRegisterSerializer(RegisterSerializer):
     """
     Custom registration for the instasew user serializer
     this adds extra fields to the django default RegisterSerializer
-
     """
 
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
     email = serializers.EmailField()
+    user_type = serializers.ChoiceField(choices=USER_TYPE_CHOICES)
     # the password
-    password = serializers.CharField(write_only=True)
-    confirm_password = serializers.CharField(write_only=True)
+    password1 = serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -26,14 +29,15 @@ class CustomRegisterSerializer(RegisterSerializer):
             'last_name',
             'email',
             'user_type',
-            'password',
-            'confirm_password',
+            'password1',
+            'password2',
         )
 
     def get_cleaned_data(self):
         """
         the default RegisterSerializer uses password1 and password2
         so  just get the data from password and  confirm_password and add it to the field for verification
+        and also this enables us to pass extra data
         """
         super(CustomRegisterSerializer, self).get_cleaned_data()
         return {
@@ -41,8 +45,8 @@ class CustomRegisterSerializer(RegisterSerializer):
             'last_name': self.validated_data.get('last_name', ''),
             'email': self.validated_data.get('email', ''),
             'user_type': self.validated_data.get('user_type', ''),
-            'password1': self.validated_data.get('password', ''),
-            'password2': self.validated_data.get('confirm_password', ''),
+            'password1': self.validated_data.get('password1', ''),
+            'password2': self.validated_data.get('password2', ''),
         }
 
     def save(self, request):
@@ -63,9 +67,9 @@ class TokenSerializer(serializers.ModelSerializer):
     In here I am checking if the user email has been verified before
     sending him his details
     """
-    user = SerializerMethodField(read_only=True)
-    access = SerializerMethodField(read_only=True)
-    refresh = SerializerMethodField(read_only=True)
+    user = serializers.SerializerMethodField(read_only=True)
+    access = serializers.SerializerMethodField(read_only=True)
+    refresh = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Token
@@ -89,8 +93,14 @@ class TokenSerializer(serializers.ModelSerializer):
     def get_user(self, obj):
         try:
             """
-            it uses the custom serializer i created for authentication only
+            it uses the custom serializer i created for authentication only so i just need this 
+            serializer method field to pass extra datas
             """
+            if obj.user.verified:
+                #  send a mail to the user once he is authenticated to prevent issues if he isnt he owner of an accout
+                #  using celery task to make it faster
+                login_notification_email.delay(
+                    obj.user.first_name, obj.user.email)
             return UserSerializer(obj.user, read_only=True).data
         except Exception as a:
             # just for debugging purposes
@@ -112,7 +122,36 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
+            'verified',
             'user_type',
         ]
         extra_kwargs = {'password': {'write_only': True,
-                                     'min_length': 4}, 'otp': {'write_only': True}}
+                                     'min_length': 4}}
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    """
+    This is used to verify the email address with otp of a user
+    """
+    otp = serializers.CharField(max_length=4)
+    email = serializers.EmailField()
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "user",
+            "gender",
+            "date_of_birth",
+            "profile_image",
+            "address",
+            "mobile",
+            "business_name",
+            "description",
+            "nationality",
+            "country",
+            "city",
+        ]

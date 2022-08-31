@@ -20,6 +20,12 @@ EXTERNAL_INSTALLED_APPS = [
     'rest_framework.authtoken',
     #  using only jwt
     'rest_framework_simplejwt',
+
+    # for running tasks
+    'django_celery_beat',
+    #  for logging and sending mail
+    #  it enable us to view failed and sent mails
+    'post_office',
 ]
 
 LOCAL_INSTALLED_APPS = [

@@ -6,3 +6,4 @@ users/migrations
 /blogs/migrations/
 /messages/migrations/
 .env
+/db.sqlite3
