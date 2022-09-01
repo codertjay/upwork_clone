@@ -1,6 +1,6 @@
 from django.db import models
 
-from catalogues.models import Category
+from categorys.models import Category
 from django.conf import settings
 
 # Create your models here.

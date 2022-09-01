@@ -3,19 +3,9 @@ from django.db import models
 from django.conf import settings
 
 # Create your models here.
+from categorys.models import Category
+
 User = settings.AUTH_USER_MODEL
-
-
-class Category(models.Model):
-    """
-    This category is being used when creating a job , catalogue also
-    it enables matching items base on filtering for that item either job or catalogue
-    """
-    name = models.CharField(max_length=250)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-timestamp']
 
 
 class Catalogue(models.Model):
@@ -32,10 +22,10 @@ class Catalogue(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+
     @property
     def catalogue_items(self):
         return self.catalogue_item_set.all()
-
 
 
 class CatalogueItem(models.Model):
@@ -44,7 +34,7 @@ class CatalogueItem(models.Model):
     a catalogue has many catalogue_item
     """
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
-    catalogue = models.ForeignKey(Category, on_delete=models.CASCADE,related_name="catalogue_item_set")
+    catalogue = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="catalogue_item_set")
     name = models.CharField(max_length=250, blank=True, null=True)
     image = models.ImageField(upload_to="catalogue_item")
     timestamp = models.DateTimeField(auto_now_add=True)

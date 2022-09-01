@@ -7,7 +7,8 @@ from rest_framework.views import APIView
 
 from users.models import User
 from users.permissions import NotLoggedInPermission, LoggedInPermission
-from users.serializers import VerifyEmailSerializer, UserProfileUpdateSerializer
+from users.serializers import VerifyEmailSerializer, UserProfileUpdateSerializer, UserProfileDetailSerializer, \
+    UserSerializer, UserUpdateSerializer
 
 
 class InstasawLoginAPIView(LoginView):
@@ -44,8 +45,7 @@ class InstasawRegisterAPIView(RegisterView):
     Register view which contains throttle and can be access three times in a minute
     """
     throttle_scope = 'authentication'
-
-    # permission_classes = [NotLoggedInPermission]
+    permission_classes = [NotLoggedInPermission]
 
     def create(self, request, *args, **kwargs):
         #  using the default serializer which was set
@@ -121,6 +121,26 @@ class VerifyEmailOTPAPIView(APIView):
             return Response({'message': 'There was an error performing your request.Email Not Verified'}, status=400)
 
 
+class UserUpdateAPIView(APIView):
+    """
+    This view is responsible for updating a user  models in which if he wants to switch profile
+     to being a freelancer or the other
+    """
+    permission_classes = [LoggedInPermission]
+
+    def put(self, request):
+        """
+        Update a user which already exit
+         and also i am passing context={'request': request} on the UserProfileUpdateSerializer to enable access of other
+        params on other serializer during verification
+        """
+        serializer = UserUpdateSerializer(instance=request.user, data=request.data, context={'request': request})
+        #  check if the data passed is valid
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'message': 'Successfully updated user', 'data': UserSerializer(request.user).data}, status=200)
+
+
 class UserProfileUpdateAPIView(APIView):
     """
     User update api view enables you to update the user api
@@ -129,12 +149,14 @@ class UserProfileUpdateAPIView(APIView):
 
     def put(self, request):
         """Update a user profile base on the data passed also we used related name to access
-        the user profile"""
+        the user profile
+
+        """
         serializer = UserProfileUpdateSerializer(instance=self.request.user.user_profile, data=self.request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
             status=200,
             data={"message": "successfully updated user profile",
-                  "data": UserProfileUpdateSerializer(request.user.user_profile).data
+                  "data": UserProfileDetailSerializer(request.user.user_profile).data
                   })

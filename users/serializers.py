@@ -57,6 +57,8 @@ class CustomRegisterSerializer(RegisterSerializer):
         # using the custom adapter I created on the adapters.py in the users app
         adapter = get_adapter()
         user = adapter.new_user(request)
+        # if the user is not passed i tend to save it as customer
+        user.user_type = self.validated_data.get('user_type', 'CUSTOMER')
         self.cleaned_data = self.get_cleaned_data()
         adapter.save_user(request, user, self)
         return user
@@ -112,7 +114,7 @@ class TokenSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     """
     This returns more detail about a user, and it is only used when the user
-    logs in or register
+    logs in or register, and also in other serializers as user,freelancer and customer
     """
 
     class Meta:
@@ -129,6 +131,37 @@ class UserSerializer(serializers.ModelSerializer):
                                      'min_length': 4}}
 
 
+class UserUpdateSerializer(serializers.ModelSerializer):
+    """
+    This serializer is meant to update a user which exists
+    """
+    first_name = serializers.CharField(max_length=250, required=False, allow_blank=False)
+    last_name = serializers.CharField(max_length=250, required=False, allow_blank=False)
+    email = serializers.EmailField(required=False, allow_blank=False)
+    user_type = serializers.ChoiceField(choices=USER_TYPE_CHOICES, allow_blank=False)
+
+    class Meta:
+        model = User
+        fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'user_type',
+        ]
+
+    def validate_email(self, obj):
+        """This checks if the email has been used before and if it already exists by another user it raises an error
+        and also the request is passed from the view to access the current user
+        """
+        logged_in_user = self.context['request'].user
+        user = User.objects.filter(email=obj).first()
+        if user:
+            if logged_in_user.email != user.email:
+                raise serializers.ValidationError(
+                    'Please use a valid email that has not been used before')
+        return obj
+
+
 class VerifyEmailSerializer(serializers.Serializer):
     """
     This is used to verify the email address with otp of a user
@@ -138,7 +171,33 @@ class VerifyEmailSerializer(serializers.Serializer):
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Used for updating a user profile
+    """
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "gender",
+            "date_of_birth",
+            "profile_image",
+            "address",
+            "mobile",
+            "business_name",
+            "description",
+            "nationality",
+            "country",
+            "city",
+        ]
+
+
+class UserProfileDetailSerializer(serializers.ModelSerializer):
+    """
+    Used to returning more details of a user profile , and also with the image of the
+    profile image we are also able to return that
+    """
     user = UserSerializer(read_only=True)
+    profile_image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserProfile
@@ -155,3 +214,6 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
             "country",
             "city",
         ]
+
+    def get_profile_image(self, obj):
+        return obj.profile_image_url

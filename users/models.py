@@ -140,6 +140,16 @@ class UserProfile(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+    @property
+    def profile_image_url(self):
+        #  adding this function to prevent issues when accesing the profile image if it doesnt exist
+        try:
+            image = self.profile_image.url
+        except:
+            image = None
+        return image
+
+
 def post_save_create_user_profile(sender, instance, *args, **kwargs):
     """
     This creates a user profile once a user is being created

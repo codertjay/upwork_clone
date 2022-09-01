@@ -7,3 +7,4 @@ users/migrations
 /messages/migrations/
 .env
 /db.sqlite3
+/categorys/migrations/

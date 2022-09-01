@@ -7,7 +7,8 @@ from users.views import InstasawLoginAPIView, InstasawRegisterAPIView, RequestEm
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/v1/users/', include("users.urls")),
-    path('api/v1/catalogues/', include("catalogues.urls"))
+    path('api/v1/catalogues/', include("catalogues.urls")),
+    path('api/v1/categorys/', include("categorys.urls"))
 
 ]
 
