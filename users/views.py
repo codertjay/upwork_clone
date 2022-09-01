@@ -1,11 +1,13 @@
 from dj_rest_auth.registration.views import RegisterView
 from dj_rest_auth.views import LoginView
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.generics import UpdateAPIView
+from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.models import User
+from users.models import User, UserProfile
 from users.permissions import NotLoggedInPermission, LoggedInPermission
 from users.serializers import VerifyEmailSerializer, UserProfileUpdateSerializer, UserProfileDetailSerializer, \
     UserSerializer, UserUpdateSerializer
@@ -160,3 +162,47 @@ class UserProfileUpdateAPIView(APIView):
             data={"message": "successfully updated user profile",
                   "data": UserProfileDetailSerializer(request.user.user_profile).data
                   })
+
+
+class FreelancerListAPIView(ListAPIView):
+    """
+    This view returns list of all the freelancers, and it also has some filtering base
+     on location and other fields like city
+
+    using a filter backend for the filtering of the user and also the ordering filter
+    SearchFilter : used for query
+    OrderingFilter : used for ordering
+    DjangoFilterBackend : used for filtering with  keys like ?gender=MALE
+    """
+    model = UserProfile
+    queryset = UserProfile.objects.verified_freelancers_profiles()
+    permission_classes = [LoggedInPermission]
+    serializer_class = UserProfileDetailSerializer
+
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = [
+        'user__id',
+        'user__first_name',
+        'user__last_name',
+        'user__email',
+        'user__email',
+        'description',
+        'nationality',
+        'gender',
+        'address',
+        'business_name',
+        'country',
+    ]
+
+    def get_queryset(self):
+        queryset = self.filter_queryset(self.queryset.all())
+        #  FIXME: ASK QUESTION ON HOW THE QUERY WILL LOOK LIKE
+
+        return queryset
+
+
+class FreelancerDetailAPIView(RetrieveAPIView):
+    permission_classes = [LoggedInPermission]
+    serializer_class = UserProfileDetailSerializer
+    queryset = UserProfile.objects.verified_freelancers_profiles()
+    lookup_field = "user__pk"

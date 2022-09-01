@@ -17,7 +17,7 @@ class Catalogue(models.Model):
     name = models.CharField(max_length=250)
     image = models.ImageField(upload_to="catalogue")
     description = models.TextField()
-    categorys = models.ManyToManyField(Category)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -34,8 +34,8 @@ class CatalogueItem(models.Model):
     a catalogue has many catalogue_item
     """
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
-    catalogue = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="catalogue_item_set")
-    name = models.CharField(max_length=250, blank=True, null=True)
+    catalogue = models.ForeignKey(Catalogue, on_delete=models.CASCADE, related_name="catalogue_item_set")
+    name = models.CharField(max_length=250)
     image = models.ImageField(upload_to="catalogue_item")
     timestamp = models.DateTimeField(auto_now_add=True)
 

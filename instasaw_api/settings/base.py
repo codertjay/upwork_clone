@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import datetime
+import os
 from pathlib import Path
 
 from decouple import config
@@ -100,8 +101,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_URL = "/static/"
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
+#  image path  and also files
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
@@ -124,7 +130,7 @@ REST_AUTH_REGISTER_SERIALIZERS = {
 """  
 custom function used to add extra functionality to the signup process
 kind of using it to create a user just let me say the save method function
- """
+"""
 ACCOUNT_ADAPTER = 'users.adapters.UserAdapter'
 
 # setup for django allauth authentications
@@ -151,12 +157,10 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
 
-POST_OFFICE = {
-    """ The DEFAULT_PRIORITY enables us to perform action without celery """
-    # 'DEFAULT_PRIORITY': 'now',
-    """ The CELERY_ENABLED enables us to perform action with celery task
+""" The CELERY_ENABLED enables us to perform action with celery task
      so right now i dont need to add shared_task or delay when sending mail 
-     """
+"""
+POST_OFFICE = {
     'CELERY_ENABLED': True,
     'MESSAGE_ID_ENABLED': True,
     'MAX_RETRIES': 5,
@@ -165,8 +169,7 @@ POST_OFFICE = {
 }
 
 """ 
-#  the default rest framework setting
-
+  the default rest framework setting
  anon is for the AnonRateThrottle base on anonymous user
  user is for the UserRateThrottle base on logged in user
  ScopedRateThrottle this is just used to set custom throttle just like the authentication, monitor below
@@ -177,6 +180,7 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.UserRateThrottle',
         'rest_framework.throttling.ScopedRateThrottle',
     ],
+
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/min',
         'user': '200/min',
@@ -185,6 +189,7 @@ REST_FRAMEWORK = {
         # used on route where the user is not logged in like requesting otp
         'monitor': '3/min',
     },
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         # currently setting the default authentication for django rest framework to jwt
         'rest_framework_simplejwt.authentication.JWTAuthentication',

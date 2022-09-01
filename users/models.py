@@ -16,6 +16,14 @@ class UserManager(BaseUserManager):
     by creating helper functions
     """
 
+    def verified_freelancers(self):
+        """ This contains list of all verified freelancers"""
+        return self.filter(verified=True, user_type="FREELANCERS")
+
+    def verified_customers(self):
+        """ This contains list of all verified customers"""
+        return self.filter(verified=True, user_type="CUSTOMERS")
+
     def create_user(self, email, password, **extra_fields):
         """
         Create and save a User with the given email and password.
@@ -76,28 +84,19 @@ class User(AbstractBaseUser, PermissionsMixin):
         """
         # importing send_otp_to_email locally to prevent issues when importing from both
         from users.tasks import send_otp_to_email_task
-        otp = random.randint(1000, 9999)
-        next_ten_minutes = timezone.now() + timedelta(minutes=10)
-        #  set the cache to be deleted in 10 minutes from our cache system
-        cache.set(f'{self.email}{otp}', next_ten_minutes, 605)
-        print(otp)
-        # the task which sends the mail using celery
-        send_otp_to_email_task.delay(email=self.email, first_name=self.first_name, last_name=self.last_name,
-                                     otp=otp)
-        return True
-        # try:
-        #     otp = random.randint(1000, 9999)
-        #     next_ten_minutes = timezone.now() + timedelta(minutes=10)
-        #     #  set the cache to be deleted in 10 minutes from our cache system
-        #     cache.set(f'{self.email}{otp}', next_ten_minutes, 605)
-        #     print(otp)
-        #     # the task which sends the mail using celery
-        #     send_otp_to_email_task.delay(email=self.email, first_name=self.first_name, last_name=self.last_name,
-        #                                  otp=otp)
-        #     return True
-        # except Exception as e:
-        #     print(e)
-        #     return False
+        try:
+            otp = random.randint(1000, 9999)
+            next_ten_minutes = timezone.now() + timedelta(minutes=10)
+            #  set the cache to be deleted in 10 minutes from our cache system
+            cache.set(f'{self.email}{otp}', next_ten_minutes, 605)
+            print(otp)
+            # the task which sends the mail using celery
+            send_otp_to_email_task.delay(email=self.email, first_name=self.first_name, last_name=self.last_name,
+                                         otp=otp)
+            return True
+        except Exception as e:
+            print(e)
+            return False
 
     def validate_email_otp(self, otp):
         """
@@ -113,6 +112,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         except Exception as e:
             print(e)
             return False
+
+
+class UserProfileManager(models.Manager):
+
+    def verified_freelancers_profiles(self):
+        return self.filter(user__user_type="FREELANCER", user__verified=True)
+
+    def verified_customers_profiles(self):
+        return self.filter(user__user_type="CUSTOMER", user__verified=True)
 
 
 GENDER_CHOICES = (
@@ -138,7 +146,7 @@ class UserProfile(models.Model):
     country = models.CharField(max_length=250, blank=True, null=True)
     city = models.CharField(max_length=250, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-
+    objects = UserProfileManager()
 
     @property
     def profile_image_url(self):

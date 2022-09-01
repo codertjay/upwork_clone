@@ -197,7 +197,6 @@ class UserProfileDetailSerializer(serializers.ModelSerializer):
     profile image we are also able to return that
     """
     user = UserSerializer(read_only=True)
-    profile_image = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = UserProfile
@@ -215,5 +214,3 @@ class UserProfileDetailSerializer(serializers.ModelSerializer):
             "city",
         ]
 
-    def get_profile_image(self, obj):
-        return obj.profile_image_url

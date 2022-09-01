@@ -8,3 +8,7 @@ users/migrations
 .env
 /db.sqlite3
 /categorys/migrations/
+/staticfiles/
+/media/catalogue/
+/media/catalogue_item/
+/media/

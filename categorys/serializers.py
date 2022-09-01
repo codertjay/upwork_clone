@@ -4,8 +4,13 @@ from .models import Category
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    timestamp = serializers.DateTimeField(read_only=True)
+
     class Meta:
         model = Category
         fields = [
-            'name'
+            'id',
+            'name',
+            'timestamp'
         ]
