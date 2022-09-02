@@ -22,7 +22,7 @@ class Job(models.Model):
     then changes to processing when a freelancer has been picked
     then changes to completed when the freelancer has completed the job
     """
-    customer = models.ForeignKey(User, on_delete=models.CASCADE)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_customers")
     name = models.CharField(max_length=250)
     description = models.TextField()
     budget = models.FloatField()
@@ -39,8 +39,8 @@ class JobInvite(models.Model):
     The job invite enables the customer to send an invitation to  freelancers
     but i made sure if a job is deleted then the invite get deleted
     """
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_customer")
-    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_freelancer")
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_invite_customers")
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="job_invite_freelancers")
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -66,7 +66,7 @@ class Proposal(models.Model):
     The job id would also be used to get the list of jobs the user has applied to once looping
     through the user proposals
     """
-    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposal_freelancer")
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposal_freelancers")
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     proposal_stage = models.CharField(max_length=50, choices=PROPOSAL_STAGE_CHOICES)
     amount = models.FloatField()
@@ -81,8 +81,8 @@ class Review(models.Model):
 
     """
     job = models.OneToOneField(Job, on_delete=models.CASCADE)
-    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="freelancer")
-    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="customer")
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="review_freelancers")
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="review_customers")
     # the max number would be 5 and min number is 0
     stars = models.IntegerField(default=0)
     description = models.TextField()
@@ -94,6 +94,6 @@ class SavedJob(models.Model):
     The saved  jobs provide list of jobs the user has saves in which he or she would like to apply to
     another time
     """
-    freelancer = models.OneToOneField(User, on_delete=models.CASCADE)
+    freelancer = models.OneToOneField(User, on_delete=models.CASCADE, related_name="saved_job_freelancer")
     saved_jobs = models.ManyToManyField(Job, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)

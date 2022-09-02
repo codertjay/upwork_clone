@@ -133,7 +133,7 @@ class UserUpdateAPIView(APIView):
     def put(self, request):
         """
         Update a user which already exit
-         and also i am passing context={'request': request} on the UserProfileUpdateSerializer to enable access of other
+         and also I am passing context={'request': request} on the UserProfileUpdateSerializer to enable access of other
         params on other serializer during verification
         """
         serializer = UserUpdateSerializer(instance=request.user, data=request.data, context={'request': request})
@@ -195,14 +195,17 @@ class FreelancerListAPIView(ListAPIView):
     ]
 
     def get_queryset(self):
+        """this is getting the filtered queryset from search filter
+                 then adding more filtering   """
         queryset = self.filter_queryset(self.queryset.all())
-        #  FIXME: ASK QUESTION ON HOW THE QUERY WILL LOOK LIKE
+        # FIXME: ASK QUESTION ON HOW THE QUERY WILL LOOK LIKE
 
         return queryset
 
 
 class FreelancerDetailAPIView(RetrieveAPIView):
+    # Get the detail of a freelancer using the id
     permission_classes = [LoggedInPermission]
     serializer_class = UserProfileDetailSerializer
     queryset = UserProfile.objects.verified_freelancers_profiles()
-    lookup_field = "user__pk"
+    lookup_field = "pk"

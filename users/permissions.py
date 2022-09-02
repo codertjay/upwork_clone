@@ -13,11 +13,9 @@ class NotLoggedInPermission(AllowAny):
             if key == 'Instasaw-Sk-Header':
                 teems_sk_header = request.headers['Instasaw-Sk-Header']
                 is_header = teems_sk_header == config('INSTASAW_SK_HEADER')
-                # fixme: throttle provide error when  credentials  is passed on test moded
+                # fixme: throttle provide error when  credentials  is passed on TestCase
                 return True
                 # return is_header
-        # fixme: remove later
-        return True
 
 
 class LoggedInPermission(IsAuthenticated):
@@ -34,7 +32,50 @@ class LoggedInPermission(IsAuthenticated):
             if key == 'Instasaw-Sk-Header':
                 teems_sk_header = request.headers['Instasaw-Sk-Header']
                 is_header = teems_sk_header == config('INSTASAW_SK_HEADER')
-                # fixme: throttle provide error when  credentials  is passed on test mode
+                # fixme: throttle provide error when  credentials  is passed on TestCase mode
                 return True
                 # return is_header
 
+
+class LoggedInCustomerPermission(IsAuthenticated):
+    """
+    used to check if the current user is a customer, and also it checks if the user is allowed to
+    create multiple jobs if he or she is on free tier
+    """
+    message = "You must be a customer and also you are not allowed to" \
+              " create multiple ongoing jons on free tier"
+
+    def has_permission(self, request, view):
+        """
+        checks for the user if he has access to create multiple and  also check headers
+        """
+        for key, value in request.headers.items():
+            if key == 'Instasaw-Sk-Header':
+                teems_sk_header = request.headers['Instasaw-Sk-Header']
+                is_header = teems_sk_header == config('INSTASAW_SK_HEADER')
+                if is_header:
+                    # if the header exist I then check for the user type
+                    if request.user.is_authenticated and request.user.user_type == "CUSTOMER":
+                        return True
+
+
+class LoggedInFreelancerPermission(IsAuthenticated):
+    """
+    used to check if the current user is a freelancer, and also it checks if the user is allowed to
+    create multiple jobs if he or she is on free tier
+    """
+    message = "You must be a customer and also you are not allowed to" \
+              " create multiple ongoing jons on free tier"
+
+    def has_permission(self, request, view):
+        """
+        checks for the user if he has access to create multiple and  also check headers
+        """
+        for key, value in request.headers.items():
+            if key == 'Instasaw-Sk-Header':
+                teems_sk_header = request.headers['Instasaw-Sk-Header']
+                is_header = teems_sk_header == config('INSTASAW_SK_HEADER')
+                if is_header:
+                    # if the header exist I then check for the user type
+                    if request.user.is_authenticated and request.user.user_type == "FREELANCER":
+                        return True
