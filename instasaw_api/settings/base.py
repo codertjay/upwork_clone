@@ -175,6 +175,9 @@ POST_OFFICE = {
  ScopedRateThrottle this is just used to set custom throttle just like the authentication, monitor below
  """
 REST_FRAMEWORK = {
+    #  default pagination
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50,
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle',

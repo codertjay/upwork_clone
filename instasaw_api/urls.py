@@ -10,7 +10,8 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/v1/users/', include("users.urls")),
     path('api/v1/catalogues/', include("catalogues.urls")),
-    path('api/v1/categorys/', include("categorys.urls"))
+    path('api/v1/categorys/', include("categorys.urls")),
+    path('api/v1/jobs/', include("jobs.urls"))
 
 ]
 
@@ -27,7 +28,6 @@ auth_urlpatterns = [
 ]
 
 urlpatterns += auth_urlpatterns
-
 
 urlpatterns += static(settings.MEDIA_URL,
                       document_root=settings.MEDIA_ROOT)

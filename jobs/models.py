@@ -1,10 +1,24 @@
 from django.db import models
+from django.db.models import Q
+from django.db.models.signals import post_save
 
 from categorys.models import Category
 from django.conf import settings
 
 # Create your models here.
 User = settings.AUTH_USER_MODEL
+
+
+class JobManager(models.Manager):
+
+    def filter_active_and_processing_jobs(self):
+        """
+        This returns all the active and processing jobs . which returns a queryset
+        """
+        return self.filter(
+            Q(project_stage="ACTIVE") |
+            Q(project_stage="PROCESSING"))
+
 
 #  the project stage choice is used to check the status of the job
 PROJECT_STAGE_CHOICES = (
@@ -32,6 +46,19 @@ class Job(models.Model):
     # duration is measured  in days
     duration = models.IntegerField()
     timestamp = models.DateTimeField(auto_now_add=True)
+    objects = JobManager()
+
+    def job_invites_count(self):
+        #  this returns the total number of invite sent
+        return self.jobinvite_set.count()
+
+    def accepted_job_invites_count(self):
+        #  this returns the total number of accepted invites
+        return self.jobinvite_set.filter(accepted=True).count()
+
+    def job_invites(self):
+        # this returns all the job invites of this job
+        return self.jobinvite_set.all()
 
 
 class JobInvite(models.Model):
@@ -97,3 +124,15 @@ class SavedJob(models.Model):
     freelancer = models.OneToOneField(User, on_delete=models.CASCADE, related_name="saved_job_freelancer")
     saved_jobs = models.ManyToManyField(Job, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+
+def post_save_create_saved_job(sender, instance, *args, **kwargs):
+    """
+    This creates saved job once a user is being created
+    :param instance:  the user created or updated
+    """
+    if instance:
+        saved_job, created = SavedJob.objects.get_or_create(freelancer=instance)
+
+
+post_save.connect(post_save_create_saved_job, sender=User)

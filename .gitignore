@@ -13,3 +13,4 @@ users/migrations
 /media/catalogue_item/
 /media/
 /memberships/migrations/
+/subscriptions/migrations/
