@@ -1,6 +1,9 @@
+from django.http import Http404
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 
+from users.models import User
 from users.permissions import LoggedInPermission
 from .models import Catalogue, CatalogueItem
 from .serializers import CatalogueDetailSerializer, CatalogueListSerializer, \
@@ -8,26 +11,58 @@ from .serializers import CatalogueDetailSerializer, CatalogueListSerializer, \
 
 
 class CatalogueListCreateAPIView(ListCreateAPIView):
+    """This view enables listing of catalogue of a user it requires the id of the user to be passed on the url """
     permission_classes = [LoggedInPermission]
     serializer_class = CatalogueListSerializer
+    queryset = Catalogue.objects.all()
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = [
+        "freelancer__first_name",
+        "freelancer__last_name",
+        "name",
+        "description",
+    ]
 
     def get_queryset(self):
-        # queryset to get the current user catalogue
-        catalogues = Catalogue.objects.filter(freelancer=self.request.user)
-        return catalogues
+        """this is getting the filtered queryset from search filter
+                 then adding more filtering   """
+        queryset = self.filter_queryset(self.queryset.all())
+        # FIXME: ASK QUESTION ON HOW THE QUERY WILL LOOK LIKE
+
+        return queryset
 
     def create(self, request, *args, **kwargs):
         """
         Create a catalogue for the logged in freelancer
-        :param request:
-        :param args:
-        :param kwargs:
-        :return:
         """
+        if self.request.user.user_type == "CUSTOMER":
+            return Response(
+                {"error": "Customers are not allowed to create catalogue please switch account to freelancer"},
+                status=400)
+
         serializer = CatalogueCreateUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(freelancer=self.request.user)
         return Response(status=201, data={"message": "Successfully created catalogue", "data": serializer.data})
+
+
+class FreelancerCatalogueListCreateAPIView(ListCreateAPIView):
+    """This view enables listing of catalogue of a user it requires the id of the user to be passed on the url """
+    permission_classes = [LoggedInPermission]
+    serializer_class = CatalogueListSerializer
+
+    def get_queryset(self):
+        # queryset to get the  user id catalogue
+        user_id = self.kwargs.get("user_id")
+        if not user_id:
+            #  if the user id is not passed it raise a 404 response
+            raise Http404
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            # if the user does not exist it raise a 404 response
+            raise Http404
+        catalogues = Catalogue.objects.filter(freelancer=user)
+        return catalogues
 
 
 class CatalogueRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
@@ -96,21 +131,21 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         """
         It returns a queryset of all the category items on a category
-        :return:
+        we use the catalogue id which is passed on the url to get the catalogue
         """
         catalogue_id = self.kwargs.get("catalogue_id")
-        catalogue_item_id = self.kwargs.get("pk")
         catalogue = Catalogue.objects.filter(id=catalogue_id).first()
         #  return the catalogue items under a catalogue using the property I created
-        #  check for the catalogue_item_id
         if not catalogue:
-            #  it returns no queryset of the catalogue items
+            #  it returns no queryset of the catalogue items if the catalogue does not exist
             return CatalogueItem.objects.none()
         else:
+            #  return all the catalogue items under a catalogue
             return catalogue.catalogue_item_set.all()
 
     def get_object(self):
-        #  getting a catalogue item from the queryset
+        #  getting a catalogue item from the queryset and using the look-up
+        #  field called pk as the catalogue id
         return self.get_queryset().filter(id=self.kwargs.get("pk")).first()
 
     def retrieve(self, request, *args, **kwargs):
@@ -124,8 +159,11 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance:
-            # if the instance doesn't exist then i return 400 status
+            # if the instance doesn't exist then I return 400 status
             return Response({"message": "item does not exist"}, status=400)
+        #  check if the logged-in user is the freelancer who created the catalogue item
+        if instance.freelancer != self.request.user:
+            return Response({"error": "Not owner of the catalogue item"}, status=400)
         #  the partial enable us to update fields even if they are not passed in the database
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -137,5 +175,8 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
         if not instance:
             # if the instance doesn't exist then I return 400 status
             return Response({"message": "item does not exist"}, status=400)
+        #  check if the logged-in user is the freelancer who created the catalogue item
+        if instance.freelancer != self.request.user:
+            return Response({"error": "Not owner of the catalogue item"}, status=400)
         self.perform_destroy(instance)
         return Response(status=204)

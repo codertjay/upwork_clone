@@ -1,19 +1,53 @@
 from rest_framework import serializers
 
-from categorys.models import Category
 from categorys.serializers import CategorySerializer
 from jobs.models import Job, JobInvite, Proposal
 from users.serializers import UserSerializer
 
 
+class ListJobSerializers(serializers.ModelSerializer):
+    """
+    Used for listing jobs
+    """
+    categorys = CategorySerializer(many=True, read_only=True)
+    customer = UserSerializer(read_only=True)
+    job_invites_count = serializers.SerializerMethodField(read_only=True)
+    accepted_job_invites_count = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Job
+        fields = [
+            "id",
+            "name",
+            "description",
+            "budget",
+            "location",
+            "duration",
+            "job_invites_count",
+            "accepted_job_invites_count",
+            "categorys",
+            "customer",
+        ]
+        read_only_fields = ["id"]
+
+    def get_job_invites_count(self, obj):
+        #  this returns the job invites count
+        return obj.job_invites_count()
+
+    def get_accepted_job_invites_count(self, obj):
+        #  this returns the job invites count
+        return obj.accepted_job_invites_count()
+
+
 class CreateUpdateJobSerializers(serializers.ModelSerializer):
     """
-    Used for updating, listing and creating a job by a customer
+    Used for updating and creating a job by a customer
     """
 
     class Meta:
         model = Job
         fields = [
+            "id",
             "name",
             "description",
             "budget",
@@ -21,19 +55,15 @@ class CreateUpdateJobSerializers(serializers.ModelSerializer):
             "location",
             "duration",
         ]
+        read_only_fields = ["id"]
 
     def create(self, validated_data):
-        # the categorys is in this form categorys=[1,2,3,4] which are the id's
+        # the categorys is in this form categorys=[<category instance>, ...] which are the instances of a category
         categorys = validated_data.pop('categorys')
         instance = Job.objects.create(**validated_data)
         for item in categorys:
             try:
-                #  getting a category through the id passed . the reason why i am using try and except here is
-                #  if the item does not exist django raise an error
-                category = Category.objects.get(id=item)
-                #  if the category exist then i add it to the item created
-                if category:
-                    instance.categorys.add(category)
+                instance.categorys.add(item)
             except Exception as a:
                 print(a)
         return instance
@@ -43,14 +73,15 @@ class RetrieveJobSerializer(serializers.ModelSerializer):
     """
     The serializer to get the detail and all info of a job .
     """
-    customer = UserSerializer
+    customer = UserSerializer(read_only=True)
     categorys = CategorySerializer(many=True)
     job_invites_count = serializers.SerializerMethodField(read_only=True)
     accepted_job_invites_count = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
-        models = Job
+        model = Job
         fields = [
+            "id",
             "customer",
             "name",
             "description",
@@ -79,20 +110,15 @@ CATEGORY_ACTION_CHOICES = (
 )
 
 
-class UpdateJobCategorySerializer(serializers.ModelSerializer):
+class UpdateJobCategorySerializer(serializers.Serializer):
     """This is used to add or remove a category from a job or add a category """
     action = serializers.ChoiceField(choices=CATEGORY_ACTION_CHOICES)
     category_id = serializers.IntegerField()
 
 
-class CreateJobInviteSerializer(serializers.ModelSerializer):
+class CreateJobInviteSerializer(serializers.Serializer):
     """this is meant for creating a job invite"""
-
-    class Meta:
-        model = JobInvite
-        fields = [
-            "freelancer_id",
-        ]
+    freelancer_id = serializers.IntegerField()
 
 
 class RetrieveJobInviteSerializer(serializers.ModelSerializer):
@@ -105,13 +131,30 @@ class RetrieveJobInviteSerializer(serializers.ModelSerializer):
         fields = [
             "customer",
             "freelancer",
-            "job",
+            "job_id",
             "accepted",
             "timestamp",
         ]
 
 
-class CreateJobProposalSerializer(serializers.ModelSerializer):
+class RetrieveUpdateProposalSerializer(serializers.ModelSerializer):
+    """This url is meant to list all proposals and also retrieve them"""
+    freelancer = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Proposal
+        fields = [
+            "freelancer",
+            "job_id",
+            "proposal_stage",
+            "amount",
+            "content",
+            "timestamp",
+        ]
+        read_only_fields = ["job_id", "freelancer"]
+
+
+class CreateProposalSerializer(serializers.ModelSerializer):
     """this is meant for creating a job proposal """
 
     class Meta:

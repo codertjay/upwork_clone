@@ -20,7 +20,8 @@ class Subscription(models.Model):
     Available subscription type for the users to choose
     """
     name = models.CharField(max_length=250)
-    subscription_type = models.CharField(max_length=50, choices=SUBSCRIPTION_TYPE_CHOICES)
+    # making it unique to prevent staff from creating deplicate subscription type
+    subscription_type = models.CharField(max_length=50, choices=SUBSCRIPTION_TYPE_CHOICES, unique=True)
     price = models.FloatField()
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
@@ -46,7 +47,7 @@ def post_save_create_user_subscription(sender, instance, *args, **kwargs):
         user_subscription, created = UserSubscription.objects.get_or_create(user=instance)
         if created:
             #  Create a free subscription model if it doesn't exist or get it
-            free_subscription, created = Subscription.objects.get_or_create(subscription_type="FREE", price=0.0)
+            free_subscription, created = Subscription.objects.get_or_create(subscription_type="FREE", price=0.0,name="FREE")
             # setting the user subscription to free if the user was newly created
             user_subscription.subscription = free_subscription
             user_subscription.save()
@@ -64,5 +65,3 @@ class Wallet(models.Model):
     earned = models.FloatField(default=0.0)
     spent = models.FloatField(default=0.0)
     balance = models.FloatField(default=0.0)
-
-

@@ -11,7 +11,8 @@ urlpatterns = [
     path('api/v1/users/', include("users.urls")),
     path('api/v1/catalogues/', include("catalogues.urls")),
     path('api/v1/categorys/', include("categorys.urls")),
-    path('api/v1/jobs/', include("jobs.urls"))
+    path('api/v1/jobs/', include("jobs.urls")),
+    path('api/v1/subscriptions/', include("subscriptions.urls"))
 
 ]
 

@@ -95,7 +95,7 @@ class Proposal(models.Model):
     """
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="proposal_freelancers")
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
-    proposal_stage = models.CharField(max_length=50, choices=PROPOSAL_STAGE_CHOICES)
+    proposal_stage = models.CharField(max_length=50, choices=PROPOSAL_STAGE_CHOICES, default="PROCESSING")
     amount = models.FloatField()
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)

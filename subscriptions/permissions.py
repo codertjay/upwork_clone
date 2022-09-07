@@ -13,6 +13,9 @@ class CustomerMembershipPermission(BasePermission):
         #  if the user is not authenticated
         if not request.user.is_authenticated:
             return False
+        # check if he isn't currently a freelancer
+        if request.user.user_type == "FREELANCER":
+            return False
         #  logged in user subscription type
         user_subscription_type = request.user.user_subscription.subscription.subscription_type
         #  using Q lookup to get the user created jobs which is not completed
@@ -22,5 +25,10 @@ class CustomerMembershipPermission(BasePermission):
             # PROCESSING we cant create job for that user
             if user_create_job_queryset.count() >= 1:
                 return False
-        if request.user.user_type == "FREELANCER":
-            return False
+        # reason while i use elif instead of just else is just to be sure
+        elif user_subscription_type == "SILVER":
+            return True
+        elif user_subscription_type == "PLATINUM":
+            return True
+
+
