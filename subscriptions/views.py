@@ -14,7 +14,7 @@ from .serializers import SubscriptionSerializer, MakePaymentSerializer, UserSubs
 class CreateSubscriptionAPIView(CreateAPIView):
     """Create a new subscription for users and can only be created by the staff members"""
     serializer_class = SubscriptionSerializer
-    permission_classes = [LoggedInStaffPermission]
+    permission_classes = [LoggedInPermission &LoggedInStaffPermission]
 
 
 class ListSubscriptionsAPIView(ListAPIView):

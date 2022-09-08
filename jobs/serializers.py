@@ -163,3 +163,10 @@ class CreateProposalSerializer(serializers.ModelSerializer):
             "amount",
             "content",
         ]
+
+
+class AcceptProposalSerializer(serializers.Serializer):
+    """
+    this serializer is used for accepting a proposal  it requires the proposal  id
+    """
+    proposal_id = serializers.IntegerField()

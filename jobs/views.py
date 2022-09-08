@@ -10,10 +10,10 @@ from categorys.models import Category
 from jobs.models import Job, JobInvite
 from jobs.serializers import CreateUpdateJobSerializers, RetrieveJobSerializer, UpdateJobCategorySerializer, \
     CreateJobInviteSerializer, RetrieveJobInviteSerializer, ListJobSerializers, CreateProposalSerializer, \
-    RetrieveUpdateProposalSerializer
+    RetrieveUpdateProposalSerializer, AcceptProposalSerializer
 from subscriptions.permissions import CustomerMembershipPermission
 from users.models import User
-from users.permissions import LoggedInPermission, FreelancerPermission
+from users.permissions import LoggedInPermission
 
 
 class JobListAPIView(ListAPIView):
@@ -200,7 +200,7 @@ class JobInviteListCreateAPIView(ListCreateAPIView):
         # check if the freelancer id is not the logged-in user
         if self.request.user.id == freelancer_id:
             return Response({"message": "You cant invite your self to work on this job"}, status=400)
-        #  to prevent creating invite on a job twice i use get or create
+        #  to prevent creating invite on a job twice I use get or create
         job_invite, created = JobInvite.objects.get_or_create(customer=self.request.user, freelancer_id=freelancer_id,
                                                               job=job)
 
@@ -268,7 +268,7 @@ class ProposalListAPIView(ListCreateAPIView):
         if job.customer == request.user:
             # preventing same user from making a proposal to his job even if he updates his user type
             return Response({"error": "Not allowed to make a proposal on your job"}, status=400)
-        if request.user in job.proposal_set.all():
+        if job.proposal_set.filter(freelancer=self.request.user).exists():
             # if the user has already made a proposal then he is not allowed to propose on the job again
             return Response({"error": "Not allowed to make a proposal twice"}, status=400)
         # using the above serializer
@@ -323,4 +323,18 @@ class AcceptProposalAPIView(APIView):
     """This view enables accepting a proposal on a job ,and it can only be accepted byt the customer
      who created the job
     """
-    pass
+    permission_classes = [LoggedInPermission]
+
+    def post(self, request, *args, **kwargs):
+        serializer = AcceptProposalSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        job_id = self.kwargs.get("job_id")
+        job = Job.objects.filter(id=job_id).first()
+        if not job:
+            return Response({"error": "Job not found"}, status=404)
+        proposal_id = serializer.validated_data.get("proposal_id")
+        job_proposal = job.proposal_set.filter(id=proposal_id)
+        if not job_proposal:
+            return Response({"error": "Job Proposal not found"}, status=404)
+        if request.user != job.user:
+            return Response({"error": "You dont have access"})

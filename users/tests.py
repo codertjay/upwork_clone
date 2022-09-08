@@ -14,11 +14,13 @@ class UserTestCase(TestCase):
         self.password = "@Pas77sword12"
         self.user = User.objects.create(
             email=self.user_email,
-            password=self.password,
             first_name="First1",
             last_name="Last1",
             user_type="CUSTOMER"
         )
+        # set the password
+        self.user.set_password(self.password)
+        self.user.save()
         #  message returned if the user is not verified
         self.not_verified_message = "Please verify your email address."
 
@@ -42,7 +44,7 @@ class UserTestCase(TestCase):
             "password2": password,
         }, )
         # Email address not yet verified
-        self.assertEqual(signup_response.status_code, 400)
+        self.assertEqual(signup_response.status_code, 201)
         self.assertEqual(signup_response.json().get("message"), self.not_verified_message)
 
     def test_not_verified_user_login(self):
@@ -52,7 +54,7 @@ class UserTestCase(TestCase):
             "email": self.user_email,
             "password": self.password,
         }, )
-        print(login_response.json())
+        print("the response for login", login_response.json())
         self.assertEqual(login_response.status_code, 400)
         self.assertEqual(login_response.json().get("message"), self.not_verified_message)
 
@@ -69,12 +71,12 @@ class UserTestCase(TestCase):
         request_otp_response = client.post("/api/v1/auth/request_email_otp/", {
             "email": self.user_email,
         })
-        print(request_otp_response.json())
-        self.assertEqual(request_otp_response.status_code, 200)
-        otp = input("Please input otp to verify account.")
-        verify_email_response = client.post("/api/v1/auth/verify_email", {
-            "otp": otp
+        otp = input("Please input otp shown in your command line: ")
+        verify_email_response = client.post("/api/v1/auth/verify_account/", {
+            "otp": otp,
+            "email": self.user_email
         })
+        self.assertEqual(request_otp_response.status_code, 200)
         self.assertEqual(verify_email_response.status_code, 200)
 
     def test_update_user_profile(self):
@@ -82,8 +84,8 @@ class UserTestCase(TestCase):
         Update the user profile . which  was created using a signal once a user was created
         :return: 
         """
-        client = APIClient()
-        update_response = client.post("/api/v1/auth/profile_update", {
+        client = self.get_api_client()
+        update_response = client.put("/api/v1/users/profile_update/", {
             "gender": "MALE",
             "date_of_birth": "2010-12-12",
             "mobile": "12345666",
@@ -94,5 +96,4 @@ class UserTestCase(TestCase):
             "country": "Nigeria",
             "city": "Lagos"
         })
-        print(update_response.json())
         self.assertEqual(update_response.status_code, 200)

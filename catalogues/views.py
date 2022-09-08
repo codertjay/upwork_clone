@@ -72,14 +72,7 @@ class CatalogueRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CatalogueDetailSerializer
     permission_classes = [LoggedInPermission]
     lookup_field = 'pk'
-
-    def get_queryset(self):
-        """
-        returns the detail of a user catalogue using the catalogue detail serializer
-        :return:
-        """
-        catalogues = Catalogue.objects.filter(freelancer=self.request.user)
-        return catalogues
+    queryset = Catalogue.objects.all()
 
     def update(self, request, *args, **kwargs):
         """
@@ -87,13 +80,24 @@ class CatalogueRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         by adding partial=True enables us to pass less fields without having required error
         """
         instance = self.get_object()
+        #  check if the user has access to deleting this catalogue
+        if instance.freelancer != self.request.user:
+            return Response({"error": "You dont have permission to update this catalogue"}, status=400)
         serializer = CatalogueCreateUpdateSerializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        #  check if the user has access to deleting this catalogue
+        if instance.freelancer != self.request.user:
+            return Response({"error": "You dont have permission to update this catalogue"}, status=400)
+        self.perform_destroy(instance)
+        return Response(status=204)
 
-class ListCreateCatalogueItem(ListCreateAPIView):
+
+class CatalogueItemListCreateAPIView(ListCreateAPIView):
     """
     This view enables creating of a catalogue item under a catalogue
     """
@@ -128,25 +132,18 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     serializer_class = CatalogueItemSerializer
     lookup_field = "pk"
 
-    def get_queryset(self):
+    def get_object(self):
         """
-        It returns a queryset of all the category items on a category
-        we use the catalogue id which is passed on the url to get the catalogue
+        It returns an object of a catalogue item using the catalogue id and the catalogue
+        item pk to filter
         """
         catalogue_id = self.kwargs.get("catalogue_id")
         catalogue = Catalogue.objects.filter(id=catalogue_id).first()
-        #  return the catalogue items under a catalogue using the property I created
         if not catalogue:
-            #  it returns no queryset of the catalogue items if the catalogue does not exist
-            return CatalogueItem.objects.none()
-        else:
-            #  return all the catalogue items under a catalogue
-            return catalogue.catalogue_item_set.all()
-
-    def get_object(self):
-        #  getting a catalogue item from the queryset and using the look-up
-        #  field called pk as the catalogue id
-        return self.get_queryset().filter(id=self.kwargs.get("pk")).first()
+            #  if no catalogue i raise 404 page not found
+            raise Http404
+        catalogue_items = catalogue.catalogue_item_set.all()
+        return catalogue_items.filter(id=self.kwargs.get("pk")).first()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
