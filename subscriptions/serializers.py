@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from subscriptions.models import Subscription, UserSubscription
+from subscriptions.models import Subscription, UserSubscription, Wallet
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -31,6 +31,7 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
     This serializer is meant to view the user subscription
     """
     subscription = SubscriptionSerializer(read_only=True)
+
     class Meta:
         model = UserSubscription
         fields = [
@@ -39,3 +40,21 @@ class UserSubscriptionSerializer(serializers.ModelSerializer):
             "last_payed",
             "timestamp",
         ]
+
+
+class WalletSerializer(serializers.ModelSerializer):
+    """
+    This serializer is meant to view wallet balance and all info of a user
+    """
+
+    class Meta:
+        model = Wallet
+        fields = [
+            "user",
+            "earned",
+            "spent",
+            "balance",
+            "ledger_balance",
+            "timestamp",
+        ]
+

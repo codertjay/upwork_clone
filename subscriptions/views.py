@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from users.permissions import LoggedInStaffPermission, LoggedInPermission, NotLoggedInPermission
 from .models import Subscription
-from .serializers import SubscriptionSerializer, MakePaymentSerializer, UserSubscriptionSerializer
+from .serializers import SubscriptionSerializer, MakePaymentSerializer, UserSubscriptionSerializer, WalletSerializer
 
 
 # Create your views here.
@@ -14,7 +14,7 @@ from .serializers import SubscriptionSerializer, MakePaymentSerializer, UserSubs
 class CreateSubscriptionAPIView(CreateAPIView):
     """Create a new subscription for users and can only be created by the staff members"""
     serializer_class = SubscriptionSerializer
-    permission_classes = [LoggedInPermission &LoggedInStaffPermission]
+    permission_classes = [LoggedInPermission & LoggedInStaffPermission]
 
 
 class ListSubscriptionsAPIView(ListAPIView):
@@ -87,3 +87,14 @@ class UserSubscriptionAPIView(APIView):
         user_subscription.last_payed = timezone.now()
         user_subscription.save()
         return Response({"message": "Subscription updated successfully"}, status=200)
+
+
+class WalletAPIView(APIView):
+    """
+    This returns the wallet balance of the logged-in user and all his require details
+    """
+    permission_classes = [LoggedInPermission]
+
+    def get(self,request,*args,**kwargs):
+        serializer = WalletSerializer(instance=self.request.user.wallet)
+        return Response(serializer.data, status=200)

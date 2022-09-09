@@ -47,7 +47,8 @@ def post_save_create_user_subscription(sender, instance, *args, **kwargs):
         user_subscription, created = UserSubscription.objects.get_or_create(user=instance)
         if created:
             #  Create a free subscription model if it doesn't exist or get it
-            free_subscription, created = Subscription.objects.get_or_create(subscription_type="FREE", price=0.0,name="FREE")
+            free_subscription, created = Subscription.objects.get_or_create(subscription_type="FREE", price=0.0,
+                                                                            name="FREE")
             # setting the user subscription to free if the user was newly created
             user_subscription.subscription = free_subscription
             user_subscription.save()
@@ -65,3 +66,17 @@ class Wallet(models.Model):
     earned = models.FloatField(default=0.0)
     spent = models.FloatField(default=0.0)
     balance = models.FloatField(default=0.0)
+    ledger_balance = models.FloatField(default=0.0)
+    timestamp = models.DateTimeField(auto_now_add=timezone.now)
+
+
+def post_save_create_wallet(sender, instance, *args, **kwargs):
+    """
+    This creates wallet once a user is being created
+    :param instance:  the user created or updated
+    """
+    if instance:
+        wallet, created = Wallet.objects.get_or_create(user=instance)
+
+
+post_save.connect(post_save_create_wallet, sender=User)

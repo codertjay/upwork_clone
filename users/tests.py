@@ -49,12 +49,10 @@ class UserTestCase(TestCase):
 
     def test_not_verified_user_login(self):
         client = APIClient()
-        print(self.user.user_type)
         login_response = client.post("/api/v1/auth/login/", {
             "email": self.user_email,
             "password": self.password,
         }, )
-        print("the response for login", login_response.json())
         self.assertEqual(login_response.status_code, 400)
         self.assertEqual(login_response.json().get("message"), self.not_verified_message)
 
