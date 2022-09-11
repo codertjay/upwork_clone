@@ -95,6 +95,6 @@ class WalletAPIView(APIView):
     """
     permission_classes = [LoggedInPermission]
 
-    def get(self,request,*args,**kwargs):
+    def get(self, request, *args, **kwargs):
         serializer = WalletSerializer(instance=self.request.user.wallet)
         return Response(serializer.data, status=200)

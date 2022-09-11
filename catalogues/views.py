@@ -157,7 +157,7 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
         instance = self.get_object()
         if not instance:
             # if the instance doesn't exist then I return 400 status
-            return Response({"message": "item does not exist"}, status=400)
+            return Response({"error": "item does not exist"}, status=400)
         #  check if the logged-in user is the freelancer who created the catalogue item
         if instance.freelancer != self.request.user:
             return Response({"error": "Not owner of the catalogue item"}, status=400)

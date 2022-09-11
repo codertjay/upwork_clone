@@ -12,7 +12,8 @@ urlpatterns = [
     path('api/v1/catalogues/', include("catalogues.urls")),
     path('api/v1/categorys/', include("categorys.urls")),
     path('api/v1/jobs/', include("jobs.urls")),
-    path('api/v1/subscriptions/', include("subscriptions.urls"))
+    path('api/v1/subscriptions/', include("subscriptions.urls")),
+    path('api/v1/blogs/', include("blogs.urls"))
 
 ]
 

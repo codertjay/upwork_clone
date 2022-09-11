@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from catalogues.models import Catalogue, CatalogueItem
 from categorys.serializers import CategorySerializer
-from users.serializers import UserSerializer
+from users.serializers import UserDetailSerializer
 
 
 class CatalogueListSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class CatalogueListSerializer(serializers.ModelSerializer):
     The serializer is used when creating a catalogue and also the freelancer is read only
 
     """
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserDetailSerializer(read_only=True)
     # fixme: make this required
     image = serializers.ImageField(required=False)
     catalogue_items_count = serializers.SerializerMethodField(read_only=True)
@@ -40,7 +40,7 @@ class CatalogueCreateUpdateSerializer(serializers.ModelSerializer):
     also the read_only in there prevent you from passing data to the freelance because the freelancer
     would be added the .save() method when saving the serailizer
     """
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserDetailSerializer(read_only=True)
     # fixme: make this required
     image = serializers.ImageField(required=False)
 
@@ -72,7 +72,7 @@ class CatalogueDetailSerializer(serializers.ModelSerializer):
     """
     This contains list of items inside a catalog and also the catalogue itself
     """
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserDetailSerializer(read_only=True)
     catalogue_items = serializers.SerializerMethodField(read_only=True)
     category = CategorySerializer(read_only=True)
     catalogue_items_count = serializers.SerializerMethodField(read_only=True)
@@ -109,7 +109,7 @@ class CatalogueItemSerializer(serializers.ModelSerializer):
     """
     Serializer used to create a catalogue item, update the catalogue item, list and the detail
     """
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = CatalogueItem

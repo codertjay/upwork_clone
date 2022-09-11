@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from categorys.serializers import CategorySerializer
 from jobs.models import Job, JobInvite, Proposal
-from users.serializers import UserSerializer
+from users.serializers import UserDetailSerializer
 
 
 class ListJobSerializers(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class ListJobSerializers(serializers.ModelSerializer):
     Used for listing jobs
     """
     categorys = CategorySerializer(many=True, read_only=True)
-    customer = UserSerializer(read_only=True)
+    customer = UserDetailSerializer(read_only=True)
     job_invites_count = serializers.SerializerMethodField(read_only=True)
     accepted_job_invites_count = serializers.SerializerMethodField(read_only=True)
 
@@ -73,7 +73,7 @@ class RetrieveJobSerializer(serializers.ModelSerializer):
     """
     The serializer to get the detail and all info of a job .
     """
-    customer = UserSerializer(read_only=True)
+    customer = UserDetailSerializer(read_only=True)
     categorys = CategorySerializer(many=True)
     job_invites_count = serializers.SerializerMethodField(read_only=True)
     accepted_job_invites_count = serializers.SerializerMethodField(read_only=True)
@@ -123,8 +123,8 @@ class CreateJobInviteSerializer(serializers.Serializer):
 
 class RetrieveJobInviteSerializer(serializers.ModelSerializer):
     """ this is meant to get all detail of the job invites and it used on the job invite retrieve api """
-    customer = UserSerializer(read_only=True)
-    freelancer = UserSerializer(read_only=True)
+    customer = UserDetailSerializer(read_only=True)
+    freelancer = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = JobInvite
@@ -139,7 +139,7 @@ class RetrieveJobInviteSerializer(serializers.ModelSerializer):
 
 class RetrieveUpdateProposalSerializer(serializers.ModelSerializer):
     """This url is meant to list all proposals and also retrieve them"""
-    freelancer = UserSerializer(read_only=True)
+    freelancer = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = Proposal

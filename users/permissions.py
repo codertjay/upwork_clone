@@ -12,7 +12,7 @@ class NotLoggedInPermission(AllowAny):
         for key, value in request.headers.items():
             #  check the host if we are running manage.py test and if it's on test
             #  mode we allow without the headers .
-            #  Note if we pass in headers it provide errors with throttle_scope
+            #  Note if we pass in headers it provides errors with throttle_scope
             if request.get_host() == "testserver":
                 return True
             if key == 'Instasaw-Sk-Header':

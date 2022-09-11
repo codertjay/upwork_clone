@@ -93,28 +93,29 @@ class TokenSerializer(serializers.ModelSerializer):
         return str(refresh)
 
     def get_user(self, obj):
+        """
+        it uses the custom serializer i created for authentication only so i just need this
+        serializer method field to pass extra datas
+        """
         try:
-            """
-            it uses the custom serializer i created for authentication only so i just need this 
-            serializer method field to pass extra datas
-            """
+            print("the obj", obj)
             if obj.user.verified:
                 #  send a mail to the user once he is authenticated to prevent issues if he isnt he owner of an accout
                 #  using celery task to make it faster
                 login_notification_email.delay(
                     obj.user.first_name, obj.user.email)
-            return UserSerializer(obj.user, read_only=True).data
+            return UserDetailSerializer(obj.user, read_only=True).data
         except Exception as a:
             # just for debugging purposes
             print('====================', a)
             return 'error'
 
 
-# This serializer is used only when users login or register to get information
-class UserSerializer(serializers.ModelSerializer):
+class UserDetailSerializer(serializers.ModelSerializer):
     """
     This returns more detail about a user, and it is only used when the user
     logs in or register, and also in other serializers as user,freelancer and customer
+    It is also used  when users login or register to get information
     """
 
     class Meta:
@@ -126,6 +127,7 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'verified',
             'user_type',
+            'is_staff',
         ]
         extra_kwargs = {'password': {'write_only': True,
                                      'min_length': 4}}
@@ -196,7 +198,7 @@ class UserProfileDetailSerializer(serializers.ModelSerializer):
     Used to returning more details of a user profile , and also with the image of the
     profile image we are also able to return that
     """
-    user = UserSerializer(read_only=True)
+    user = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = UserProfile
@@ -214,3 +216,33 @@ class UserProfileDetailSerializer(serializers.ModelSerializer):
             "city",
         ]
 
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    This returns little detail of the user which is currently used in blog post
+    """
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'first_name',
+            'last_name',
+        ]
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    """
+    Used to return minimum  detail of a user profile , and also with the image of the
+    profile image we are also able to return that
+    currently used in blog post and comments
+    """
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "user",
+            "gender",
+            "profile_image",
+        ]

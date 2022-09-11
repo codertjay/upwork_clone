@@ -20,7 +20,7 @@ class JobListAPIView(ListAPIView):
     """List all jobs """
     permission_classes = [LoggedInPermission]
     serializer_class = ListJobSerializers
-    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    filter_backends = [SearchFilter, OrderingFilter]
     queryset = Job.objects.all()
     search_fields = [
         "name",
@@ -137,7 +137,7 @@ class JobCategoryUpdateAPIView(APIView):
         # returns the current user jobs which is not completed
         customer_job = self.request.user.job_customers.filter_active_and_processing_jobs().filter(id=job_id).first()
         if not customer_job:
-            return Response({"message": "Job does not exist"}, status=404)
+            return Response({"error": "Job does not exist"}, status=404)
         #  check the customer if he has permission to delete a post
         if customer_job.customer != self.request.user:
             return Response({"error": "You are not allowed to update this job category"}, status=400)
@@ -338,3 +338,4 @@ class AcceptProposalAPIView(APIView):
             return Response({"error": "Job Proposal not found"}, status=404)
         if request.user != job.user:
             return Response({"error": "You dont have access"})
+

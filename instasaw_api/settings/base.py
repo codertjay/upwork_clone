@@ -118,8 +118,8 @@ AUTH_USER_MODEL = 'users.User'
 
 # change the default auth serializer for token and get user details
 REST_AUTH_SERIALIZERS = {
-    'USER_DETAIL_SERIALIZER': 'users.serializers.UserSerializer',
-    'TOKEN_SERIALIZER': 'users.serializers.TokenSerializer',
+    'USER_DETAILS_SERIALIZER': 'users.serializers.UserDetailSerializer',
+    'JWTSerializer': 'users.serializers.TokenSerializer',
 }
 
 #  change the default register serializer

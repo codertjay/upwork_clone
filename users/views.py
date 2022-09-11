@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from users.models import User, UserProfile
 from users.permissions import NotLoggedInPermission, LoggedInPermission
 from users.serializers import VerifyEmailSerializer, UserProfileUpdateSerializer, UserProfileDetailSerializer, \
-    UserSerializer, UserUpdateSerializer
+    UserDetailSerializer, UserUpdateSerializer, TokenSerializer
 
 
 class InstasawLoginAPIView(LoginView):
@@ -32,11 +32,11 @@ class InstasawLoginAPIView(LoginView):
         self.serializer = self.get_serializer(data=self.request.data,
                                               context={'request': request})
         self.serializer.is_valid(raise_exception=True)
-
-        # login the user to access him/ her on the request
         self.login()
+        # login the user to access him/ her on the request
         #  overriding the login of allauth to add this if user is not verified
         if not request.user.verified:
+            # fixme :add verify mail send otp
             return Response({"message": "Please verify your email address."},
                             status=400)
         return self.get_response()
@@ -112,15 +112,15 @@ class VerifyEmailOTPAPIView(APIView):
             otp = serializer.data.get('otp')
             user = User.objects.filter(email=email).first()
             if not user:
-                return Response({'message': 'Please pass in the correct data'}, status=400)
+                return Response({'error': 'Please pass in the correct data'}, status=400)
             if user.validate_email_otp(otp):
                 user.verified = True
                 user.save()
                 return Response({'message': 'Successfully verify your mail'}, status=200)
-            return Response({'message': 'Email Not Verified .Time exceeded or OTP is invalid'}, status=400)
+            return Response({'error': 'Email Not Verified .Time exceeded or OTP is invalid'}, status=400)
         except Exception as a:
             print("error-----", a)
-            return Response({'message': 'There was an error performing your request.Email Not Verified'}, status=400)
+            return Response({'error': 'There was an error performing your request.Email Not Verified'}, status=400)
 
 
 class UserUpdateAPIView(APIView):
@@ -140,7 +140,7 @@ class UserUpdateAPIView(APIView):
         #  check if the data passed is valid
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'message': 'Successfully updated user', 'data': UserSerializer(request.user).data}, status=200)
+        return Response({'message': 'Successfully updated user', 'data': UserDetailSerializer(request.user).data}, status=200)
 
 
 class UserProfileUpdateAPIView(APIView):
@@ -179,9 +179,8 @@ class FreelancerListAPIView(ListAPIView):
     permission_classes = [LoggedInPermission]
     serializer_class = UserProfileDetailSerializer
 
-    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
-        'user__id',
         'user__first_name',
         'user__last_name',
         'user__email',
