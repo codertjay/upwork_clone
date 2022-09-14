@@ -38,6 +38,7 @@ LOCAL_INSTALLED_APPS = [
     'blogs',
     'categorys',
     'subscriptions',
+    'chats',
 ]
 INSTALLED_APPS += EXTERNAL_INSTALLED_APPS
 INSTALLED_APPS += LOCAL_INSTALLED_APPS

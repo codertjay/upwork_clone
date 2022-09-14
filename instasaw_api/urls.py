@@ -13,7 +13,9 @@ urlpatterns = [
     path('api/v1/categorys/', include("categorys.urls")),
     path('api/v1/jobs/', include("jobs.urls")),
     path('api/v1/subscriptions/', include("subscriptions.urls")),
-    path('api/v1/blogs/', include("blogs.urls"))
+    path('api/v1/blogs/', include("blogs.urls")),
+    # todo: so many things to fix on the chat i didnt right comment also still testing
+    # path('api/v1/chats/', include("chats.urls"))
 
 ]
 
