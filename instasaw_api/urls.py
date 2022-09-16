@@ -8,13 +8,14 @@ from users.views import InstasawLoginAPIView, InstasawRegisterAPIView, RequestEm
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path('api/v1/blogs/', include("blogs.urls")),
     path('api/v1/users/', include("users.urls")),
     path('api/v1/catalogues/', include("catalogues.urls")),
     path('api/v1/categorys/', include("categorys.urls")),
     path('api/v1/jobs/', include("jobs.urls")),
     path('api/v1/subscriptions/', include("subscriptions.urls")),
     path('api/v1/plans/', include("plans.urls")),
-    path('api/v1/blogs/', include("blogs.urls")),
+    path('api/v1/webhooks/', include("webhooks.urls")),
     # todo: so many things to fix on the chat i didnt right comment also still testing
     # path('api/v1/chats/', include("chats.urls"))
 

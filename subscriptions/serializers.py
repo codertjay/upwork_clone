@@ -2,20 +2,24 @@ from rest_framework import serializers
 
 from plans.serializers import PlanSerializer
 from subscriptions.models import UserSubscription
+from users.serializers import UserSerializer
 
 
 class UserSubscriptionDetailSerializer(serializers.ModelSerializer):
     """
     This serializer is meant to view the user subscription only, and it is not accepting any post or put request
     """
-    subscription_plan = PlanSerializer(read_only=True)
+    plan = PlanSerializer(read_only=True)
+    user = UserSerializer(read_only=True)
 
     class Meta:
         model = UserSubscription
         fields = [
             "user",
-            "subscription_plan",
+            "plan",
             "paypal_subscription_id",
+            "next_billing_date",
+            "cancel_on_next",
             "last_payed",
             "timestamp",
         ]

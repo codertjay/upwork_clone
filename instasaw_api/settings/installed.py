@@ -41,6 +41,7 @@ LOCAL_INSTALLED_APPS = [
     'plans',
     'virtual_wallet',
     'chats',
+    'webhooks',
 ]
 INSTALLED_APPS += EXTERNAL_INSTALLED_APPS
 INSTALLED_APPS += LOCAL_INSTALLED_APPS
