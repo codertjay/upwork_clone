@@ -14,3 +14,6 @@ users/migrations
 /media/
 /memberships/migrations/
 /subscriptions/migrations/
+*/__pycache__/*
+
+templates/test_paypal_subscription.html

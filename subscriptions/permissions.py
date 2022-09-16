@@ -17,7 +17,7 @@ class CustomerMembershipPermission(BasePermission):
         if request.user.user_type == "FREELANCER":
             return False
         #  logged in user subscription type
-        user_subscription_type = request.user.user_subscription.subscription.subscription_type
+        user_subscription_type = request.user.user_subscription.plan.plan_type
         #  using Q lookup to get the user created jobs which is not completed
         user_create_job_queryset = request.user.job_customers.filter_active_and_processing_jobs()
         if user_subscription_type == "FREE":

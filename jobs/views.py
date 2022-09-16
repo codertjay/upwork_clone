@@ -320,9 +320,9 @@ class ProposalRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
 
 
 class AcceptProposalAPIView(APIView):
-    """This view enables accepting a proposal on a job ,and it can only be accepted byt the customer
-     who created the job
-    """
+    """This view enables accepting a proposal on a job ,and it can only be accepted by the customer
+     who created the job and also once the job is accepted the payment for the will be moved to the
+         instasaw account"""
     permission_classes = [LoggedInPermission]
 
     def post(self, request, *args, **kwargs):

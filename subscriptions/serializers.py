@@ -1,60 +1,44 @@
 from rest_framework import serializers
 
-from subscriptions.models import Subscription, UserSubscription, Wallet
+from plans.serializers import PlanSerializer
+from subscriptions.models import UserSubscription
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    """This subscription is meant to list, create, delete,update  subscription(s)"""
-
-    class Meta:
-        model = Subscription
-        fields = [
-            "id",
-            "name",
-            "subscription_type",
-            "price",
-            "timestamp",
-        ]
-        read_only_fields = ["id", "timestamp"]
-
-
-class MakePaymentSerializer(serializers.Serializer):
-    """this serializer is used for updating the user subscription and the extra fields apart from the
-     subscription_id is meant for payment
-      which is still under development
-     """
-    subscription_id = serializers.IntegerField()
-
-
-class UserSubscriptionSerializer(serializers.ModelSerializer):
+class UserSubscriptionDetailSerializer(serializers.ModelSerializer):
     """
-    This serializer is meant to view the user subscription
+    This serializer is meant to view the user subscription only, and it is not accepting any post or put request
     """
-    subscription = SubscriptionSerializer(read_only=True)
+    subscription_plan = PlanSerializer(read_only=True)
 
     class Meta:
         model = UserSubscription
         fields = [
             "user",
-            "subscription",
+            "subscription_plan",
+            "paypal_subscription_id",
             "last_payed",
             "timestamp",
         ]
+        read_only_fields = ["id", "timestamp", "user"]
 
 
-class WalletSerializer(serializers.ModelSerializer):
+class UserSubscriptionSerializer(serializers.Serializer):
     """
-    This serializer is meant to view wallet balance and all info of a user
+    this serializer is used to update the user subscription after a payment was successful
     """
+    plan_id = serializers.CharField(max_length=250)
+    paypal_subscription_id = serializers.CharField(max_length=250)
 
-    class Meta:
-        model = Wallet
-        fields = [
-            "user",
-            "earned",
-            "spent",
-            "balance",
-            "ledger_balance",
-            "timestamp",
-        ]
-
+    def validate_paypal_subscription_id(self, obj):
+        """This checks if the paypal_subscription_id has been used before and if it already exists by another user it
+        raises an error and also the request is passed from the view to access the current user
+        """
+        #  check the paypal_subscription_id if it has been used by another user
+        logged_in_user_subscription = self.context['request'].user.user_subscription
+        user_subscription = UserSubscription.objects.filter(paypal_subscription_id=obj).first()
+        if user_subscription:
+            #  in here we are preventing the user from using the PayPal subscription id of another user
+            if logged_in_user_subscription != user_subscription:
+                raise serializers.ValidationError(
+                    'Please use a valid subscription id that has not been used before by another user')
+        return obj
