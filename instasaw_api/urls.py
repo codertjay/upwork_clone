@@ -16,6 +16,8 @@ urlpatterns = [
     path('api/v1/subscriptions/', include("subscriptions.urls")),
     path('api/v1/plans/', include("plans.urls")),
     path('api/v1/webhooks/', include("webhooks.urls")),
+    path('api/v1/virtual_wallets/', include("virtual_wallets.urls")),
+    path('api/v1/transactions/', include("transactions.urls")),
     # todo: so many things to fix on the chat i didnt right comment also still testing
     # path('api/v1/chats/', include("chats.urls"))
 

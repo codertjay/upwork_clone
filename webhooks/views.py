@@ -1,9 +1,10 @@
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.permissions import LoggedInPermission, LoggedInStaffPermission
-from webhooks.models import Webhook
-from webhooks.serializers import CreateWebhookSerializer, DeleteWebhookSerializer
+from webhooks.models import Webhook, WebhookEvent
+from webhooks.serializers import CreateWebhookSerializer, DeleteWebhookSerializer, WebhookEventSerializer
 from webhooks.utils import create_webhook, delete_webhook
 
 
@@ -45,12 +46,53 @@ class DeleteWebhookAPIView(APIView):
         return Response({"message": "Successfully deleted webhook"}, status=200)
 
 
-class ListenToWebhookAPIView(APIView):
+""""
+PAYOUT 
+The possible values are:
+
+SUCCESS. Funds have been credited to the recipient’s account.
+FAILED. This payout request has failed, so funds were not deducted from the sender’s account.
+PENDING. Your payout request was received and will be processed.
+UNCLAIMED. The recipient for this payout does not have a PayPal account. A link to sign up for a PayPal account was sent
+to the recipient. However, if the recipient does not claim this payout within 30 days, the funds are returned to your 
+account.
+RETURNED. The recipient has not claimed this payout, so the funds have been returned to your account.
+ONHOLD. This payout request is being reviewed and is on hold.
+BLOCKED. This payout request has been blocked.
+REFUNDED. This payout request was refunded.
+REVERSED. This payout request was reversed
+"""
+
+
+class ListenToWebhookEventAPIView(APIView):
     """
     this listens to webhook event for failed payments by the user
     """
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        #  todo :  verify webhook and also convert user subscription for failed auto subscription
+        webhook, created = WebhookEvent.objects.get_or_create(event_id=request.data.get("id"),
+                                                              webhook_event=request.data)
+        if data.get("event_type") == "PAYMENT.PAYOUTS-ITEM.FAILED":
+            pass
+
         return Response(status=200)
+
+
+# check this code to learn how to verify webhook
+# https://github.com/paypal/PayPal-Python-SDK/blob/master/paypalrestsdk/notifications.py
+
+
+class WebhookEventListAPIView(ListAPIView):
+    """List all webhook events"""
+    serializer_class = WebhookEventSerializer
+    queryset = WebhookEvent.objects.all()
+    permission_classes = [LoggedInPermission & LoggedInStaffPermission]
+
+
+class WebhookEventDetailAPIView(RetrieveAPIView):
+    """Detail  of a webhook event"""
+    serializer_class = WebhookEventSerializer
+    queryset = WebhookEvent.objects.all()
+    permission_classes = [LoggedInPermission & LoggedInStaffPermission]
+    lookup_field = "id"

@@ -15,7 +15,7 @@ class NotLoggedInPermission(AllowAny):
             #  Note if we pass in headers it provides errors with throttle_scope
             if request.get_host() == "testserver":
                 return True
-            if key == 'Instasaw-Sk-Header':
+            if key.lower() == 'instasaw-sk-header':
                 teems_sk_header = request.headers['Instasaw-Sk-Header']
                 is_header = teems_sk_header == config('INSTASAW_SK_HEADER')
                 # fixme: throttle provide error when  credentials  is passed on TestCase
@@ -41,7 +41,7 @@ class LoggedInPermission(BasePermission):
             #  Note if we pass in headers it provides errors with throttle_scope
             if request.get_host() == "testserver":
                 return True
-            if key == 'Instasaw-Sk-Header':
+            if key.lower() == 'instasaw-sk-header':
                 teems_sk_header = request.headers['Instasaw-Sk-Header']
                 is_header = teems_sk_header == config('INSTASAW_SK_HEADER')
                 return is_header

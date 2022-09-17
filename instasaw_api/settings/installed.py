@@ -39,9 +39,10 @@ LOCAL_INSTALLED_APPS = [
     'categorys',
     'subscriptions',
     'plans',
-    'virtual_wallet',
+    'virtual_wallets',
     'chats',
     'webhooks',
+    'transactions',
 ]
 INSTALLED_APPS += EXTERNAL_INSTALLED_APPS
 INSTALLED_APPS += LOCAL_INSTALLED_APPS

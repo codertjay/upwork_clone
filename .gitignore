@@ -17,4 +17,5 @@ users/migrations
 */__pycache__/*
 
 templates/test_paypal_subscription.html
+templates/test_paypal_fund_button.html
 /*/migrations/*
