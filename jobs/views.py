@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from categorys.models import Category
-from jobs.models import Job, JobInvite
+from jobs.models import Job, JobInvite, Contract
 from jobs.serializers import CreateUpdateJobSerializers, RetrieveJobSerializer, UpdateJobCategorySerializer, \
     CreateJobInviteSerializer, RetrieveJobInviteSerializer, ListJobSerializers, CreateProposalSerializer, \
     RetrieveUpdateProposalSerializer, AcceptProposalSerializer, CreateContractSerializer
@@ -394,9 +394,13 @@ class CreateContract(APIView):
         previous_balance = customer_wallet.balance
         if not customer_wallet.withdraw_balance(amount):
             return Response({"error": "Error occurred"}, status=400)
+        # check if a contract already exist
+        if Contract.objects.filter(job=job).exists():
+            return Response({"error": "This job already have a contract"}, status=400)
         #  the contract
-        contract = job.contract.objects.create(
+        contract = Contract.objects.create(
             customer=self.request.user,
+            job=job,
             freelancer=freelancer,
             amount=amount,
             start_date=start_date,
@@ -409,11 +413,12 @@ class CreateContract(APIView):
         freelancer_proposal.proposal_stage = "ACCEPTED"
         freelancer_proposal.save()
         transaction = Transaction.objects.create(
-            transaction_id=uuid.uuid4().hex,
             user=self.request.user,
+            transaction_id=uuid.uuid4().hex,
             amount=amount,
             transaction_stage="SUCCESSFUL",
             transaction_type="DEBIT",
+            transaction_category="WITHDRAWAL",
             previous_balance=previous_balance,
             current_balance=customer_wallet.balance
         )
