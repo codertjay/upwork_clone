@@ -136,3 +136,15 @@ def post_save_create_saved_job(sender, instance, *args, **kwargs):
 
 
 post_save.connect(post_save_create_saved_job, sender=User)
+
+
+class Contract(models.Model):
+    # todo: add this to the schema this is new
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contract_customers")
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contract_freelancers")
+    #  a job can have only one contract
+    job = models.OneToOneField(Job, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10000000, decimal_places=2)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    timestamp = models.DateTimeField(auto_now_add=True)

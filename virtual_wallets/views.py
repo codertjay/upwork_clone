@@ -1,3 +1,5 @@
+import uuid
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -73,7 +75,6 @@ class ApprovePaymentAPIView(APIView):
         user_wallet = request.user.wallet
         #  add the amount the user paid using the transaction we created which has the amount the user create to pay for
         user_wallet.balance += transaction.amount
-        user_wallet.ledger_balance += transaction.amount
         user_wallet.save()
         #  update the current balance of the user
         transaction.current_balance = user_wallet.balance
@@ -97,17 +98,19 @@ class WithdrawFundAPIView(APIView):
         user_wallet = request.user.wallet
         if not user_wallet.can_withdraw(amount):
             return Response({"error": "Insufficient fund"}, status=400)
-        # making payment to the logged-in user email address . and if he does not
-        # wish to use that email then he has to change his email address
-        response = create_paypal_payout(amount=amount, email=request.user.email)
         # create a transaction with an instance . which enable use to dynamically add fields base on the response
         transaction = Transaction()
+        transaction.transaction_id = uuid.uuid4().hex
         transaction.user = request.user
         transaction.current_balance = user_wallet.balance
         transaction.previous_balance = user_wallet.balance
         transaction.transaction_type = "DEBIT"
         transaction.amount = amount
         transaction.transaction_category = "WITHDRAWAL"
+        # making payment to the logged-in user email address . and if he does not
+        # wish to use that email then he has to change his email address
+        response = create_paypal_payout(amount=amount, email=request.user.email,
+                                        transaction_id=transaction.transaction_id)
         if not response:
             transaction.transaction_stage = "FAILED"
             transaction.save()

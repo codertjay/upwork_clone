@@ -2,6 +2,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from transactions.models import Transaction
 from users.permissions import LoggedInPermission, LoggedInStaffPermission
 from webhooks.models import Webhook, WebhookEvent
 from webhooks.serializers import CreateWebhookSerializer, DeleteWebhookSerializer, WebhookEventSerializer
@@ -73,8 +74,17 @@ class ListenToWebhookEventAPIView(APIView):
         data = request.data
         webhook, created = WebhookEvent.objects.get_or_create(event_id=request.data.get("id"),
                                                               webhook_event=request.data)
+        # this is only for failed payout
         if data.get("event_type") == "PAYMENT.PAYOUTS-ITEM.FAILED":
-            pass
+            #  to be very sure I need to check if the status is really FAILED
+            if data.get("resource").get("transaction_status") == "FAILED":
+                transaction_id = data.get("resource").get("sender_batch_id")
+                transaction = Transaction.objects.filter(transaction_id=transaction_id,
+                                                         transaction_stage="PROCESSING").first()
+                if transaction:
+                    # refund the money of the user
+                    transaction.refund_balance()
+                    return Response(status=200)
 
         return Response(status=200)
 

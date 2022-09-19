@@ -15,7 +15,8 @@ class Wallet(models.Model):
     user = models.OneToOneField(User, related_name="wallet", on_delete=models.CASCADE)
 
     balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
-    ledger_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
+    #  having issues managing the ledger balance since i don't have a wallet id to check
+    # ledger_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
     def can_withdraw(self, amount):
@@ -23,6 +24,20 @@ class Wallet(models.Model):
         than
         """
         if self.balance > amount:
+            return True
+        return False
+
+    def fund_balance(self, amount: float):
+        """this is used to fund the user wallet once the amount is provided"""
+        self.balance += amount
+        self.save()
+        return True
+
+    def withdraw_balance(self, amount: float):
+        """this is used to withdraw the user wallet once the amount is provided"""
+        if self.can_withdraw(amount):
+            self.balance -= amount
+            self.save()
             return True
         return False
 

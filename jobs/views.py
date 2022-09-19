@@ -1,5 +1,6 @@
+import uuid
+
 from django.http import Http404
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, \
     RetrieveDestroyAPIView, CreateAPIView
@@ -10,8 +11,9 @@ from categorys.models import Category
 from jobs.models import Job, JobInvite
 from jobs.serializers import CreateUpdateJobSerializers, RetrieveJobSerializer, UpdateJobCategorySerializer, \
     CreateJobInviteSerializer, RetrieveJobInviteSerializer, ListJobSerializers, CreateProposalSerializer, \
-    RetrieveUpdateProposalSerializer, AcceptProposalSerializer
+    RetrieveUpdateProposalSerializer, AcceptProposalSerializer, CreateContractSerializer
 from subscriptions.permissions import CustomerMembershipPermission
+from transactions.models import Transaction
 from users.models import User
 from users.permissions import LoggedInPermission
 
@@ -326,6 +328,7 @@ class AcceptProposalAPIView(APIView):
     permission_classes = [LoggedInPermission]
 
     def post(self, request, *args, **kwargs):
+        # serializer which is used to get the freelancer is
         serializer = AcceptProposalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         job_id = self.kwargs.get("job_id")
@@ -333,9 +336,85 @@ class AcceptProposalAPIView(APIView):
         if not job:
             return Response({"error": "Job not found"}, status=404)
         proposal_id = serializer.validated_data.get("proposal_id")
-        job_proposal = job.proposal_set.filter(id=proposal_id)
-        if not job_proposal:
-            return Response({"error": "Job Proposal not found"}, status=404)
+        # check the job user
         if request.user != job.user:
             return Response({"error": "You dont have access"})
+        #  check job proposal of the freelancer exists
+        job_proposal = job.proposal_set.filter(id=proposal_id).first()
+        if not job_proposal:
+            return Response({"error": "Job Proposal not found"}, status=404)
+        #  i know you might be thinking we can accept multiple user proposal .
+        #  yes we can, but we can only create one contract for the job
+        #  which deals with the money and everything so that prevent issues
+        if job_proposal.proposal_stage == "PROCESSING":
+            job_proposal.proposal_stage == "Accepted"
+            job_proposal.save()
+        return Response({"message": "Successfully accepted proposal"}, status=200)
 
+
+class CreateContract(APIView):
+    """
+    This is the stage where the customer accept the user proposal and
+     if he/she hasn't then we automatically accept the proposal
+    """
+    permission_classes = [LoggedInPermission]
+
+    def post(self, request, *args, **kwargs):
+        # create contract base on the data provided
+        serializer = CreateContractSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        job_id = serializer.validated_data("job_id")
+        freelancer_id = serializer.validated_data("freelancer_id")
+        amount = serializer.validated_data("amount")
+        start_date = serializer.validated_data("start_date")
+        end_date = serializer.validated_data("end_date")
+        # customer wallet
+        customer_wallet = request.user.wallet
+        # check if the customer has up to the amount
+        if not customer_wallet.can_withdraw(amount):
+            return Response({"error": "You dont have up to thi amount in your wallet"}, status=400)
+        #  check if the freelance exist
+        freelancer = User.objects.filter(id=freelancer_id, user_type="FREELANCER").first()
+        if not freelancer:
+            return Response({"error": "Freelancer does not exist"}, status=400)
+        #  check the job if it exists
+        job = Job.objects.filter(id=job_id, customer=self.request.user).first()
+        if not job:
+            return Response({"error": "Job does not exist"}, status=400)
+        # check the freelancer proposal
+        freelancer_proposal = job.proposal_set.filter(freelancer=freelancer).first()
+        if not freelancer_proposal:
+            return Response(
+                {"error": "This freelancer hasn't made a proposal yet . please him/her to"}, status=400)
+        # check if a job contract has not been created
+        if job.contract.exists():
+            return Response({"error": "This job already have a contract will you like to delete it"}, status=400)
+        # Remove the money from the user balance
+        # before withdrawing i need to get the user previous balance
+        previous_balance = customer_wallet.balance
+        if not customer_wallet.withdraw_balance(amount):
+            return Response({"error": "Error occurred"}, status=400)
+        #  the contract
+        contract = job.contract.objects.create(
+            customer=self.request.user,
+            freelancer=freelancer,
+            amount=amount,
+            start_date=start_date,
+            end_date=end_date,
+        )
+        #  once the contract has been created  we need to do two things which are
+        # Accept the proposal if it is not
+        #  Remove the money from the balance
+        #  Create a transaction
+        freelancer_proposal.proposal_stage = "ACCEPTED"
+        freelancer_proposal.save()
+        transaction = Transaction.objects.create(
+            transaction_id=uuid.uuid4().hex,
+            user=self.request.user,
+            amount=amount,
+            transaction_stage="SUCCESSFUL",
+            transaction_type="DEBIT",
+            previous_balance=previous_balance,
+            current_balance=customer_wallet.balance
+        )
+        return Response({"message": "Contract successfully created"}, status=201)

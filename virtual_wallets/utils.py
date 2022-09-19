@@ -57,9 +57,11 @@ def verify_paypal_payment(paypal_id):
     return False
 
 
-def create_paypal_payout(email, amount):
+def create_paypal_payout(email, amount, transaction_id):
     """
     this function enables withdrawing funds for user
+    :param transaction_id: the  transaction id which is a random uuid. which enables us to know who own the webhook once a webhook
+    is payout
     :param email: the email we are funding
     :param amount: the amount the user want to withdraw
     :return:
@@ -72,7 +74,7 @@ def create_paypal_payout(email, amount):
         'POST', f"{PAYPAL_URL}v1/payments/payouts/",
         json={
             "sender_batch_header": {
-                "sender_batch_id": f"Payouts_{timestamp}",
+                "sender_batch_id": f"{transaction_id}",
                 "email_subject": "You have a payout!",
                 "email_message": "You have received a payout! Thanks for using our service!"
             },
@@ -84,7 +86,7 @@ def create_paypal_payout(email, amount):
                         "currency": "USD"
                     },
                     "note": "Thanks for your patronage!",
-                    "sender_item_id": f"instasaw_{timestamp}",
+                    "sender_item_id": f"{transaction_id}",
                     "receiver": f"{email}",
                     "notification_language": "en-US"
                 },

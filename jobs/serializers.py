@@ -1,7 +1,10 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework import serializers
 
 from categorys.serializers import CategorySerializer
-from jobs.models import Job, JobInvite, Proposal
+from jobs.models import Job, JobInvite, Proposal, Contract
 from users.serializers import UserDetailSerializer
 
 
@@ -170,3 +173,28 @@ class AcceptProposalSerializer(serializers.Serializer):
     this serializer is used for accepting a proposal  it requires the proposal  id
     """
     proposal_id = serializers.IntegerField()
+
+
+class CreateContractSerializer(serializers.Serializer):
+    """
+    this serializer is used to creating contract on a job post
+    """
+    freelancer_id = serializers.CharField(max_length=250)
+    job_id = serializers.CharField(max_length=250)
+    amount = serializers.DecimalField(max_digits=100000000, decimal_places=2)
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+
+    def validate_start_date(self, obj):
+        #  this is just to prevent the user from using past date to create this
+        current_date = timezone.now().date() - timedelta(days=0)
+        if current_date > obj:
+            raise serializers.ValidationError("Current date cant be greater than start date")
+        return obj
+
+    def validate_end_date(self, obj):
+        #  this is just to prevent the user from using past date to create this
+        current_date = timezone.now().date() - timedelta(days=0)
+        if current_date > obj:
+            raise serializers.ValidationError("Current date cant be greater than end date")
+        return obj
