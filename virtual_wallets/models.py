@@ -3,8 +3,11 @@ from django.db import models
 # Create your models here.
 from django.db.models.signals import post_save
 from django.utils import timezone
-
+from django.conf import settings
 from subscriptions.models import User
+
+#  payout percent fee
+PAYOUT_PERCENT_FEE = settings.PAYPAL_PAYOUT_PERCENT_FEE
 
 
 class Wallet(models.Model):
@@ -18,6 +21,9 @@ class Wallet(models.Model):
     #  having issues managing the ledger balance since i don't have a wallet id to check
     # ledger_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
+
+    class Meta:
+        ordering = ['-timestamp']
 
     def can_withdraw(self, amount):
         """this functions check if the amount passed is greater than the balance to prevent users from withdrawing more

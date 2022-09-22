@@ -72,8 +72,8 @@ class ListenToWebhookEventAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        webhook, created = WebhookEvent.objects.get_or_create(event_id=request.data.get("id"),
-                                                              webhook_event=request.data)
+        webhook = WebhookEvent.objects.create(event_id=request.data.get("id"),
+                                              webhook_event=request.data)
         # this is only for failed payout
         if data.get("event_type") == "PAYMENT.PAYOUTS-ITEM.FAILED":
             #  to be very sure I need to check if the status is really FAILED
@@ -85,6 +85,9 @@ class ListenToWebhookEventAPIView(APIView):
                     # refund the money of the user
                     transaction.refund_balance()
                     return Response(status=200)
+        # check the event type if it was successful
+        if data.get("event_type") == "PAYMENT.PAYOUTSBATCH.SUCCESS":
+            pass
 
         return Response(status=200)
 
@@ -106,3 +109,56 @@ class WebhookEventDetailAPIView(RetrieveAPIView):
     queryset = WebhookEvent.objects.all()
     permission_classes = [LoggedInPermission & LoggedInStaffPermission]
     lookup_field = "id"
+
+
+
+{
+  "payout_item_id": "8AELMXH8UB2P8",
+  "transaction_id": "0C413693MN970190K",
+  "activity_id": "0E158638XS0329106",
+  "transaction_status": "SUCCESS",
+  "payout_item_fee": {
+    "currency": "USD",
+    "value": "0.35"
+  },
+  "payout_batch_id": "Q8KVJG9TZTNN4",
+  "payout_item": {
+    "amount": {
+      "value": "9.87",
+      "currency": "USD"
+    },
+    "recipient_type": "EMAIL",
+    "note": "Thanks for your patronage!",
+    "receiver": "receiver@example.com",
+    "sender_item_id": "14Feb_234"
+  },
+  "time_processed": "2018-01-27T10:17:41Z",
+  "links": [
+    {
+      "rel": "self",
+      "href": "https://api-m.sandbox.paypal.com/v1/payments/payouts-item/8AELMXH8UB2P8",
+      "method": "GET"
+    },
+    {
+      "href": "https://api-m.sandbox.paypal.com/v1/payments/payouts/Q8KVJG9TZTNN4",
+      "rel": "batch",
+      "method": "GET"
+    }
+  ]
+}
+
+
+{'id': 'WH-64R10817XA050051G-3RL93107GC167834E', 'event_version': '1.0', 'create_time': '2022-09-21T10:27:08.853Z',
+ 'resource_type': 'payouts', 'event_type': 'PAYMENT.PAYOUTSBATCH.SUCCESS',
+ 'summary': 'Payouts batch completed successfully.', 'resource': {
+    'batch_header': {'payout_batch_id': 'B76ZYZAL3F2NL', 'batch_status': 'SUCCESS',
+                     'time_created': '2022-09-21T10:26:49Z', 'time_completed': '2022-09-21T10:26:50Z',
+                     'sender_batch_header': {'sender_batch_id': 'c4b90b1454e54f5ab455a7652f5e7109'},
+                     'funding_source': 'BALANCE', 'amount': {'currency': 'USD', 'value': '50.00'},
+                     'fees': {'currency': 'USD', 'value': '0.25'}, 'payments': 1}, 'links': [
+        {'href': 'https://api.sandbox.paypal.com/v1/payments/payouts/B76ZYZAL3F2NL', 'rel': 'self', 'method': 'GET',
+         'encType': 'application/json'}]}, 'links': [
+    {'href': 'https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-64R10817XA050051G-3RL93107GC167834E',
+     'rel': 'self', 'method': 'GET'}, {
+        'href': 'https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-64R10817XA050051G-3RL93107GC167834E/resend',
+        'rel': 'resend', 'method': 'POST'}]}

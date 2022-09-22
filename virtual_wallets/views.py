@@ -96,19 +96,22 @@ class WithdrawFundAPIView(APIView):
         if not request.user.validate_email_otp(otp):
             return Response({"error": "OTP not valid"}, status=400)
         user_wallet = request.user.wallet
-        if not user_wallet.can_withdraw(amount):
+        previous_balance = user_wallet.balance
+        if not user_wallet.withdraw_balance(amount):
             return Response({"error": "Insufficient fund"}, status=400)
+
         # create a transaction with an instance . which enable use to dynamically add fields base on the response
         transaction = Transaction()
         transaction.transaction_id = uuid.uuid4().hex
         transaction.user = request.user
         transaction.current_balance = user_wallet.balance
-        transaction.previous_balance = user_wallet.balance
+        transaction.previous_balance = previous_balance
         transaction.transaction_type = "DEBIT"
         transaction.amount = amount
         transaction.transaction_category = "WITHDRAWAL"
         # making payment to the logged-in user email address . and if he does not
         # wish to use that email then he has to change his email address
+        # calculate the fees amount
         response = create_paypal_payout(amount=amount, email=request.user.email,
                                         transaction_id=transaction.transaction_id)
         if not response:

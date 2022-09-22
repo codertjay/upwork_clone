@@ -73,7 +73,7 @@ def get_paypal_subscription_status(paypal_subscription_id):
         headers=headers)
     if response.status_code == 200:
         subscription_status = response.json().get('status')
-        if subscription_status == 'ACTIVE' or subscription_status == "APPROVAL_PENDING" or subscription_status == "APPROVED":
+        if subscription_status == 'ACTIVE' or subscription_status == "APPROVED":
             return True
     return False
 
@@ -98,5 +98,6 @@ def cancel_paypal_subscription(paypal_subscription_id):
     if response.status_code == 204:
         return True
     return False
+
 
 

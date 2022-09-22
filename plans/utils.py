@@ -103,7 +103,7 @@ def create_paypal_plan(amount, name, interval):
             ],
             "payment_preferences": {
                 "auto_bill_outstanding": True,
-                "payment_failure_threshold": 3
+                "payment_failure_threshold": 1
             },
 
         },

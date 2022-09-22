@@ -21,3 +21,4 @@ def cancel_all_user_subscriptions_with_cancel_next():
         if date_to_be_cancelled >= timezone.now():
             user_subscription.convert_user_subscription_to_free()
     return True
+

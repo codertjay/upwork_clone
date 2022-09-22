@@ -2,7 +2,9 @@ from django.urls import path
 
 from .views import JobCreateAPIView, JobRetrieveUpdateDestroyAPIView, JobCategoryUpdateAPIView, CustomerJobListAPIView, \
     JobInviteListCreateAPIView, JobListAPIView, JobInviteRetrieveDestroyAPIView, ProposalRetrieveUpdateDestroyAPIView, \
-    ProposalListAPIView
+    ProposalListAPIView, GivenReviewListAPIView, ReceivedReviewListAPIView, ReviewDetailAPIView, ModifyProposalAPIView, \
+    CreateContractAPIView, CustomerContractListAPIView, FreelancerActiveContractsListAPIView, ContractRetrieveAPIView, \
+    MarkContractCompletedAPIView
 
 urlpatterns = [
     # Job routes
@@ -24,6 +26,20 @@ urlpatterns = [
     # Job Proposal routes
     path("proposals/<int:job_id>/", ProposalListAPIView.as_view(), name="list_proposals"),
     path("proposals/<int:job_id>/<int:proposal_id>/", ProposalRetrieveUpdateDestroyAPIView.as_view(),
-         name="retrieve_update_destroy_proposal")
+         name="retrieve_update_destroy_proposal"),
+    path("proposals/<int:job_id>/modify/", ModifyProposalAPIView.as_view(), name="modify_proposal"),
+
+    # Contract routes
+    path("contracts/job/<int:job_id>/", CreateContractAPIView.as_view(), name="create_contract"),
+    path("contracts/customer/<int:customer_id>/", CustomerContractListAPIView.as_view(), name="customer_contract_list"),
+    path("contracts/freelancer/<int:freelancer_id>/", FreelancerActiveContractsListAPIView.as_view(),
+         name="freelancer_contract_list"),
+    path("contracts/<int:id>/", ContractRetrieveAPIView.as_view(), name="retrieve_contract"),
+    path("contracts/mark_completed/<int:id>/", MarkContractCompletedAPIView.as_view(), name="mark_contract_completed"),
+
+    # job reviews
+    path("reviews/given/<int:customer_id>/", GivenReviewListAPIView.as_view(), name="list_reviews_given"),
+    path("reviews/received/<int:freelancer_id>/", ReceivedReviewListAPIView.as_view(), name="list_reviews_received"),
+    path("reviews/<int:id>/", ReviewDetailAPIView.as_view(), name="review_detail"),
 
 ]

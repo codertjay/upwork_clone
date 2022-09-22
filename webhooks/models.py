@@ -1,3 +1,5 @@
+from enum import auto
+
 from django.db import models
 
 
@@ -12,3 +14,7 @@ class WebhookEvent(models.Model):
     """
     event_id = models.CharField(max_length=255)
     webhook_event = models.JSONField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']

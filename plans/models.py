@@ -30,6 +30,8 @@ class Plan(models.Model):
     paypal_plan_id = models.CharField(blank=True, null=True, max_length=1000)
     price = models.DecimalField(decimal_places=2, null=True, blank=True, max_digits=99999)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
+    class Meta:
+        ordering = ['-timestamp']
 
     def activate_plan(self):
         """this activates a  plan if it is not activate"""

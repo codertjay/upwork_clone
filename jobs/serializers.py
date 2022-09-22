@@ -4,8 +4,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from categorys.serializers import CategorySerializer
-from jobs.models import Job, JobInvite, Proposal, Contract
-from users.serializers import UserDetailSerializer
+from jobs.models import Job, JobInvite, Proposal, Contract, PROPOSAL_STAGE_CHOICES, Review
+from users.serializers import UserDetailSerializer, UserSerializer
 
 
 class ListJobSerializers(serializers.ModelSerializer):
@@ -26,12 +26,13 @@ class ListJobSerializers(serializers.ModelSerializer):
             "budget",
             "location",
             "duration",
+            "timestamp",
             "job_invites_count",
             "accepted_job_invites_count",
             "categorys",
             "customer",
         ]
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "timestamp"]
 
     def get_job_invites_count(self, obj):
         #  this returns the job invites count
@@ -147,6 +148,7 @@ class RetrieveUpdateProposalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Proposal
         fields = [
+            "id",
             "freelancer",
             "job_id",
             "proposal_stage",
@@ -154,7 +156,7 @@ class RetrieveUpdateProposalSerializer(serializers.ModelSerializer):
             "content",
             "timestamp",
         ]
-        read_only_fields = ["job_id", "freelancer"]
+        read_only_fields = ["job_id", "id", "freelancer"]
 
 
 class CreateProposalSerializer(serializers.ModelSerializer):
@@ -168,19 +170,20 @@ class CreateProposalSerializer(serializers.ModelSerializer):
         ]
 
 
-class AcceptProposalSerializer(serializers.Serializer):
+class ModifyProposalSerializer(serializers.Serializer):
     """
     this serializer is used for accepting a proposal  it requires the proposal  id
     """
     proposal_id = serializers.IntegerField()
+    #  the action to modify a proposal
+    action = serializers.ChoiceField(choices=PROPOSAL_STAGE_CHOICES)
 
 
 class CreateContractSerializer(serializers.Serializer):
     """
     this serializer is used to creating contract on a job post
     """
-    freelancer_id = serializers.CharField(max_length=250)
-    job_id = serializers.CharField(max_length=250)
+    proposal_id = serializers.CharField(max_length=250)
     amount = serializers.DecimalField(max_digits=100000000, decimal_places=2)
     start_date = serializers.DateField()
     end_date = serializers.DateField()
@@ -198,3 +201,54 @@ class CreateContractSerializer(serializers.Serializer):
         if current_date > obj:
             raise serializers.ValidationError("Current date cant be greater than end date")
         return obj
+
+
+class ReviewCreateSerializer(serializers.Serializer):
+    """
+    This takes in the job id and also the proposal id we would like to write a review on
+    """
+    proposal_id = serializers.CharField()
+    job_id = serializers.CharField()
+    stars = serializers.IntegerField(max_value=5, min_value=1)
+    description = serializers.CharField()
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    """
+    This serializer is meant for listing review and also getting the detail of the review
+    """
+    freelancer = UserSerializer(read_only=True)
+    customer = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Review
+        fields = [
+            "job_id",
+            "freelancer",
+            "customer",
+            "stars",
+            "description",
+            "timestamp",
+        ]
+
+
+class ContractSerializer(serializers.ModelSerializer):
+    """
+    This is used to list all contract  and also the detail of a contract .
+    """
+    freelancer = UserSerializer(read_only=True)
+    customer = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Contract
+        fields = [
+            "customer",
+            "freelancer",
+            "job_id",
+            "amount",
+            "completed",
+            "start_date",
+            "end_date",
+            "timestamp",
+        ]
+

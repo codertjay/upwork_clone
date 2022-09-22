@@ -23,6 +23,9 @@ class UserSubscription(models.Model):
     next_billing_date = models.DateTimeField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
+    class Meta:
+        ordering = ['-timestamp']
+
     def save(self, *args, **kwargs):
         #  before saving any UserSubscription I verify the paypal_subscription_id  is active
         if self.plan:
@@ -43,7 +46,15 @@ class UserSubscription(models.Model):
         this function enables checking the subscription status using the  paypal_subscription_id
         :return:  true of false
         """
-        return get_paypal_subscription_status(self.paypal_subscription_id)
+        try:
+            if get_paypal_subscription_status(self.paypal_subscription_id):
+                return True
+            return False
+        except Exception as a:
+            #  an error can occur since if a user is on free tier he currently have no subscription on
+            #  PayPal and doesn't have paypal_subscription_id
+            print(a)
+            return False
 
     def cancel_paypal_subscription(self):
         """

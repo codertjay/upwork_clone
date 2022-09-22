@@ -3,15 +3,16 @@ import uuid
 from django.http import Http404
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, ListAPIView, \
-    RetrieveDestroyAPIView, CreateAPIView
+    RetrieveDestroyAPIView, CreateAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from categorys.models import Category
-from jobs.models import Job, JobInvite, Contract
+from jobs.models import Job, JobInvite, Contract, Review
 from jobs.serializers import CreateUpdateJobSerializers, RetrieveJobSerializer, UpdateJobCategorySerializer, \
     CreateJobInviteSerializer, RetrieveJobInviteSerializer, ListJobSerializers, CreateProposalSerializer, \
-    RetrieveUpdateProposalSerializer, AcceptProposalSerializer, CreateContractSerializer
+    RetrieveUpdateProposalSerializer, ModifyProposalSerializer, CreateContractSerializer, ReviewCreateSerializer, \
+    ReviewSerializer, ContractSerializer
 from subscriptions.permissions import CustomerMembershipPermission
 from transactions.models import Transaction
 from users.models import User
@@ -321,7 +322,42 @@ class ProposalRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
         return Response(status=204)
 
 
-class AcceptProposalAPIView(APIView):
+class GivenReviewListAPIView(ListAPIView):
+    """List all reviews given by this user"""
+    permission_classes = [LoggedInPermission]
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        #  get the reviews given by this customer
+        review = Review.objects.filter(customer_id=self.kwargs.get("customer_id"))
+        #  if the review does not exist i raise a 404
+        if not review:
+            raise Http404
+        return review
+
+
+class ReceivedReviewListAPIView(ListAPIView):
+    """List all reviews received by this user"""
+    permission_classes = [LoggedInPermission]
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        #  get the reviews given by this freelancer
+        review = Review.objects.filter(freelancer_id=self.kwargs.get("freelancer_id"))
+        #  if the review does not exist I raise a 404
+        if not review:
+            raise Http404
+        return review
+
+
+class ReviewDetailAPIView(RetrieveAPIView):
+    """Retrieve information about a review """
+    permission_classes = [LoggedInPermission]
+    serializer_class = RetrieveJobSerializer
+    lookup_field = "id"
+
+
+class ModifyProposalAPIView(APIView):
     """This view enables accepting a proposal on a job ,and it can only be accepted by the customer
      who created the job and also once the job is accepted the payment for the will be moved to the
          instasaw account"""
@@ -329,30 +365,34 @@ class AcceptProposalAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         # serializer which is used to get the freelancer is
-        serializer = AcceptProposalSerializer(data=request.data)
+        serializer = ModifyProposalSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         job_id = self.kwargs.get("job_id")
         job = Job.objects.filter(id=job_id).first()
         if not job:
             return Response({"error": "Job not found"}, status=404)
         proposal_id = serializer.validated_data.get("proposal_id")
+        action = serializer.validated_data.get("action")
         # check the job user
-        if request.user != job.user:
+        if request.user != job.customer:
             return Response({"error": "You dont have access"})
         #  check job proposal of the freelancer exists
         job_proposal = job.proposal_set.filter(id=proposal_id).first()
         if not job_proposal:
             return Response({"error": "Job Proposal not found"}, status=404)
-        #  i know you might be thinking we can accept multiple user proposal .
+        #  before updating a proposal check if a contract for that proposal exists
+        contract = Contract.objects.filter(freelancer=job_proposal.freelancer, job=job).first()
+        if contract:
+            return Response({"error": "You cant modify a proposal that already have a contract"})
+        #  I know you might be thinking we can accept multiple user proposal .
         #  yes we can, but we can only create one contract for the job
         #  which deals with the money and everything so that prevent issues
-        if job_proposal.proposal_stage == "PROCESSING":
-            job_proposal.proposal_stage == "Accepted"
-            job_proposal.save()
-        return Response({"message": "Successfully accepted proposal"}, status=200)
+        job_proposal.proposal_stage = action
+        job_proposal.save()
+        return Response({"message": f"Successfully Modified proposal to {action}"}, status=200)
 
 
-class CreateContract(APIView):
+class CreateContractAPIView(APIView):
     """
     This is the stage where the customer accept the user proposal and
      if he/she hasn't then we automatically accept the proposal
@@ -363,40 +403,45 @@ class CreateContract(APIView):
         # create contract base on the data provided
         serializer = CreateContractSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        job_id = serializer.validated_data("job_id")
-        freelancer_id = serializer.validated_data("freelancer_id")
-        amount = serializer.validated_data("amount")
-        start_date = serializer.validated_data("start_date")
-        end_date = serializer.validated_data("end_date")
+        job_id = self.kwargs.get("job_id")
+        proposal_id = serializer.validated_data.get("proposal_id")
+        amount = serializer.validated_data.get("amount")
+        start_date = serializer.validated_data.get("start_date")
+        end_date = serializer.validated_data.get("end_date")
         # customer wallet
         customer_wallet = request.user.wallet
         # check if the customer has up to the amount
         if not customer_wallet.can_withdraw(amount):
-            return Response({"error": "You dont have up to thi amount in your wallet"}, status=400)
-        #  check if the freelance exist
-        freelancer = User.objects.filter(id=freelancer_id, user_type="FREELANCER").first()
-        if not freelancer:
-            return Response({"error": "Freelancer does not exist"}, status=400)
+            return Response({"error": "You dont have up to this amount in your wallet"}, status=400)
         #  check the job if it exists
         job = Job.objects.filter(id=job_id, customer=self.request.user).first()
         if not job:
             return Response({"error": "Job does not exist"}, status=400)
+        #  get the freelancer id
+        proposal = job.proposal_set.filter(id=proposal_id).first()
+        if not proposal:
+            return Response({"error": "Proposal does not exist"}, status=400)
+        #   get the id of the freelancer
+        freelancer_id = proposal.freelancer.id
+        #  check if the freelance exist
+        freelancer = User.objects.filter(id=freelancer_id, user_type="FREELANCER").first()
+        if not freelancer:
+            return Response({"error": "Freelancer does not exist"}, status=400)
+
         # check the freelancer proposal
         freelancer_proposal = job.proposal_set.filter(freelancer=freelancer).first()
         if not freelancer_proposal:
             return Response(
                 {"error": "This freelancer hasn't made a proposal yet . please him/her to"}, status=400)
-        # check if a job contract has not been created
-        if job.contract.exists():
-            return Response({"error": "This job already have a contract will you like to delete it"}, status=400)
         # Remove the money from the user balance
-        # before withdrawing i need to get the user previous balance
-        previous_balance = customer_wallet.balance
-        if not customer_wallet.withdraw_balance(amount):
-            return Response({"error": "Error occurred"}, status=400)
         # check if a contract already exist
         if Contract.objects.filter(job=job).exists():
             return Response({"error": "This job already have a contract"}, status=400)
+        # before withdrawing i need to get the user previous balance
+        previous_balance = customer_wallet.balance
+        #  remove the money from the customer wallet for the project
+        if not customer_wallet.withdraw_balance(amount):
+            return Response({"error": "Error occurred"}, status=400)
         #  the contract
         contract = Contract.objects.create(
             customer=self.request.user,
@@ -406,12 +451,11 @@ class CreateContract(APIView):
             start_date=start_date,
             end_date=end_date,
         )
-        #  once the contract has been created  we need to do two things which are
-        # Accept the proposal if it is not
-        #  Remove the money from the balance
-        #  Create a transaction
+        #  once the contract has been created  we need to do three things which are
+        #  Accept the proposal if it is not
         freelancer_proposal.proposal_stage = "ACCEPTED"
         freelancer_proposal.save()
+        #  Create a transaction for the customer
         transaction = Transaction.objects.create(
             user=self.request.user,
             transaction_id=uuid.uuid4().hex,
@@ -422,4 +466,150 @@ class CreateContract(APIView):
             previous_balance=previous_balance,
             current_balance=customer_wallet.balance
         )
+        #  Make the job_stage PROCESSING
+        job.project_stage = "PROCESSING"
+        job.save()
         return Response({"message": "Contract successfully created"}, status=201)
+
+
+class JobReviewCreateAPIView(APIView):
+    """
+    This class create review for a job post proposal once done
+    """
+    permission_classes = [LoggedInPermission]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ReviewCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        job_id = serializer.validated_data.get("job_id")
+        proposal_id = serializer.validated_data.get("proposal_id")
+        stars = serializer.validated_data.get("stars")
+        description = serializer.validated_data.get("description")
+        # check the job if its exists
+        job = Job.objects.filter(id=job_id).first()
+        if not job:
+            return Response({"error": "Job does not exist"}, status=400)
+        # check the proposal once the job exists
+        proposal = job.proposal_set.filter(id=proposal_id).first()
+        if not proposal:
+            return Response({"error": "Proposal does not exist"}, status=400)
+        # check if a contract was created and the contract is completed
+        contract = Contract.objects.filter(job=job, freelancer=proposal.freelancer).first()
+        if not contract:
+            return Response({"error": "Contract does not exist. which means this job wasn't done"}, status=400)
+        # check if review already exists
+        review = Review.objects.filter(job=job, freelancer=proposal.freelancer).first()
+        if review:
+            return Response({"error": "Review already exists"}, status=200)
+        # create the review
+        Review.objects.create(
+            job=job,
+            freelancer=proposal.freelancer,
+            customer=job.customer,
+            stars=stars,
+            description=description,
+        )
+        return Response({"message": "Review was successfully created"}, status=201)
+
+
+class FreelancerActiveContractsListAPIView(ListAPIView):
+    """
+    This is used list all active contract made by a customer for a freelancer
+    """
+    permission_classes = [LoggedInPermission]
+    serializer_class = ContractSerializer
+
+    def get_queryset(self):
+        freelancer_id = self.kwargs.get("freelancer_id")
+        # it only shows the contract if it is not completed
+        contracts = Contract.objects.filter(freelancer_id=freelancer_id, completed=False)
+        if not contracts.exists():
+            raise Http404
+        return contracts
+
+
+class CustomerContractListAPIView(ListAPIView):
+    """
+    This I used to list the contracts created by a customer
+    """
+    permission_classes = [LoggedInPermission]
+    serializer_class = ContractSerializer
+
+    def get_queryset(self):
+        customer_id = self.kwargs.get("customer_id")
+        #  only shows contracts that are not completed
+        contracts = Contract.objects.filter(customer_id=customer_id, completed=False)
+        if not contracts.exists():
+            raise Http404
+        return contracts
+
+
+class ContractRetrieveAPIView(RetrieveAPIView):
+    """this is used to get the detail of a contract"""
+    permission_classes = [LoggedInPermission]
+    serializer_class = ContractSerializer
+    lookup_field = "id"
+
+    def get_queryset(self):
+        return Contract.objects.all()
+
+
+class MarkContractCompletedAPIView(APIView):
+    """
+    This is used to mark a contract completed and also fund the customer wallet  who finished the contract,create a
+     transaction for the freelancer and also changed the job  project_stage to completed
+    """
+    permission_classes = [LoggedInPermission]
+
+    def post(self, request, *args, **kwargs):
+        # get the contract id from the url
+        contract_id = self.kwargs.get("id")
+        #  check if the contract exist and also the customer must be the logged-in user .
+        #  because he was the once who created the contract
+        contract = Contract.objects.filter(id=contract_id).first()
+        if not contract:
+            return Response({"error": "Contract does not exist"}, status=400)
+        # we need to check also who is accessing .
+        # and note the customer must be the once who owns the contract or the user must be a staff user
+        if contract.customer != request.user or request.user.is_staff == False:
+            return Response({"error": "You dont have access to update this contract"})
+        # create a transaction for the freelancer who would
+        freelancer_wallet = request.user.wallet
+        #  we need to get the freelancer previous balance before updating his wallet
+        freelancer_previous_balance = freelancer_wallet.balance
+        #  Fund the freelancer wallet
+        if contract.completed:
+            return Response({"error": "Contract has already being completed"}, status=400)
+        if not freelancer_wallet.fund_balance(contract.amount):
+            # Create a transaction for the freelancer if failed
+            transaction = Transaction.objects.create(
+                previous_balance=freelancer_previous_balance,
+                current_balance=freelancer_wallet.balance,
+                user=contract.freelancer,
+                transaction_id=uuid.uuid4().hex,
+                transaction_category="AMOUNT FUNDING",
+                transaction_type="CREDIT",
+                transaction_stage="FAILED",
+                amount=contract.amount,
+            )
+            return Response({"error": "Error Funding freelancer wallet"}, status=400)
+        # After funding the balance we need to mark the contract as completed
+        contract.completed = True
+        contract.save()
+
+        # Create a transaction for the freelancer if successful
+        transaction = Transaction.objects.create(
+            previous_balance=freelancer_previous_balance,
+            current_balance=freelancer_wallet.balance,
+            user=contract.freelancer,
+            transaction_id=uuid.uuid4().hex,
+            transaction_category="AMOUNT FUNDING",
+            transaction_type="CREDIT",
+            transaction_stage="SUCCESSFUL",
+            amount=contract.amount,
+        )
+        #  Update the job as completed
+        job = contract.job
+        job.project_stage = "COMPLETED"
+        job.save()
+        return Response({"message": "Successfully marked contract as completed"}, status=200)

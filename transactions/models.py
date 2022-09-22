@@ -37,6 +37,9 @@ class Transaction(models.Model):
     current_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
+    class Meta:
+        ordering = ['-timestamp']
+
     def refund_balance(self):
         """
         this is used to refund the user wallet if payout failed . then we call this
@@ -51,4 +54,3 @@ class Transaction(models.Model):
                 self.current_balance = user_wallet.balance
                 self.save()
         return True
-

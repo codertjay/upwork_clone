@@ -77,6 +77,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateField(default=timezone.now)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = UserManager()
+    class Meta:
+        ordering = ['-timestamp']
 
     def send_email_otp(self):
         """

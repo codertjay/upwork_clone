@@ -1,8 +1,11 @@
+import uuid
+
 from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from plans.models import Plan
+from transactions.models import Transaction
 from users.permissions import LoggedInPermission
 from .models import UserSubscription
 from .serializers import UserSubscriptionSerializer, UserSubscriptionDetailSerializer
@@ -55,6 +58,17 @@ class UserSubscriptionAPIView(APIView):
         user_subscription.last_payed = timezone.now()
         user_subscription.paypal_subscription_id = paypal_subscription_id
         user_subscription.save()
+        #  create a transaction
+        transaction = Transaction.objects.create(
+            previous_balance=self.request.user.wallet.balance,
+            current_balance=self.request.user.wallet.balance,
+            user=self.request.user,
+            transaction_id=uuid.uuid4().hex,
+            transaction_category="SUBSCRIPTION",
+            transaction_type="DEBIT",
+            transaction_stage="SUCCESSFUL",
+            amount=plan.price,
+        )
         return Response({"message": "Subscription updated successfully"}, status=200)
 
 
@@ -71,5 +85,3 @@ class CancelUserSubscriptionAPIView(APIView):
         user_subscription.cancel_on_next = True
         user_subscription.save()
         return Response({"message": "Subscription as being set to cancel on next billing date"}, status=200)
-
-

@@ -46,3 +46,5 @@ class UserSubscriptionSerializer(serializers.Serializer):
                 raise serializers.ValidationError(
                     'Please use a valid subscription id that has not been used before by another user')
         return obj
+
+

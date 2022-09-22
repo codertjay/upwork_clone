@@ -48,6 +48,9 @@ class Job(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = JobManager()
 
+    class Meta:
+        ordering = ['-timestamp']
+
     def job_invites_count(self):
         #  this returns the total number of invite sent
         return self.jobinvite_set.count()
@@ -71,6 +74,9 @@ class JobInvite(models.Model):
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
     accepted = models.BooleanField(default=False)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
 
 
 PROPOSAL_STAGE_CHOICES = (
@@ -100,6 +106,9 @@ class Proposal(models.Model):
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-timestamp']
+
 
 class Review(models.Model):
     """
@@ -115,6 +124,9 @@ class Review(models.Model):
     description = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-timestamp']
+
 
 class SavedJob(models.Model):
     """
@@ -124,6 +136,9 @@ class SavedJob(models.Model):
     freelancer = models.OneToOneField(User, on_delete=models.CASCADE, related_name="saved_job_freelancer")
     saved_jobs = models.ManyToManyField(Job, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
 
 
 def post_save_create_saved_job(sender, instance, *args, **kwargs):
@@ -145,6 +160,10 @@ class Contract(models.Model):
     #  a job can have only one contract
     job = models.OneToOneField(Job, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10000000, decimal_places=2)
+    completed = models.BooleanField(default=False)
     start_date = models.DateField()
     end_date = models.DateField()
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
