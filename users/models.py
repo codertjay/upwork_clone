@@ -64,6 +64,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     I actually added blank and null in some fields
     the username field is converted to use the email field
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     # this tells django the username field because sometimes you can change it to email or username itself
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'user_type']
@@ -77,6 +79,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     date_joined = models.DateField(default=timezone.now)
     timestamp = models.DateTimeField(auto_now_add=True)
     objects = UserManager()
+
     class Meta:
         ordering = ['-timestamp']
 

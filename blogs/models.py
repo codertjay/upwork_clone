@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.signals import pre_save
 from django.utils import timezone
-
+import uuid
 from django.conf import settings
 
 from django.utils.text import slugify
@@ -14,6 +14,8 @@ class BlogCategory(models.Model):
     Reason why i created a new one is to prevent users from seeing blog categorys
      which could not be appropriate for the nomal category like shirt
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=250)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -36,6 +38,8 @@ class Blog(models.Model):
     """
     If the user is deleted I don't intend to delete the blog post
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     title = models.CharField(max_length=250)
     description = models.TextField()
@@ -68,6 +72,8 @@ pre_save.connect(pre_save_post_receiver, sender=Blog)
 
 
 class CommentLike(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.ForeignKey('Comment', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
@@ -83,6 +89,8 @@ class Comment(models.Model):
     """
     this comment has a parent id which enables it to have a reply or more of like a thread
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     likes = models.ManyToManyField(User, related_name='comment_likes', through=CommentLike, blank=True)

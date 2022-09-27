@@ -1,4 +1,5 @@
 from django.db import models
+import uuid
 
 # Create your models here.
 from django.db.models.signals import post_save
@@ -15,6 +16,8 @@ class Wallet(models.Model):
     The wallet models enables tracking of the user, by getting info of amount spent, amount earned
     and the user current balance which can be withdrawn
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     user = models.OneToOneField(User, related_name="wallet", on_delete=models.CASCADE)
 
     balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)

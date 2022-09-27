@@ -16,10 +16,10 @@ urlpatterns = [
     path("comments/<str:blog_slug>/", CommentListCreateAPIView.as_view(), name="comment_list_create"),
     #  return the detail of a comment and also this deletes the comment and update it
     #  currently the blog_slug is not used in the filtering is just meant to arrange the url
-    path("comments/<str:blog_slug>/<int:pk>/", CommentRetrieveUpdateDestroyAPIView.as_view(),
+    path("comments/<str:blog_slug>/<str:id>/", CommentRetrieveUpdateDestroyAPIView.as_view(),
          name="comment_retrieve_update_destroy"),
     #  enables like a comment
-    path("comment_like/<int:pk>/", CommentLikeAPIView.as_view(),
+    path("comment_like/<str:id>/", CommentLikeAPIView.as_view(),
          name="comment_like"),
 ]
 #  add the blog category url to the urlpatterns above

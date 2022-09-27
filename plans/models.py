@@ -2,6 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils import timezone
+import uuid
 
 from plans.utils import create_paypal_plan, update_paypal_plan_amount, activate_paypal_plan, deactivate_paypal_plan
 
@@ -22,6 +23,8 @@ class Plan(models.Model):
     """
     Available subscription type for the users to choose it more of like  plan
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=250)
     # making it unique to prevent staff from creating deplicate subscription type
     plan_type = models.CharField(max_length=50, choices=PLAN_TYPE_CHOICES, unique=True)
@@ -30,6 +33,7 @@ class Plan(models.Model):
     paypal_plan_id = models.CharField(blank=True, null=True, max_length=1000)
     price = models.DecimalField(decimal_places=2, null=True, blank=True, max_digits=99999)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
+
     class Meta:
         ordering = ['-timestamp']
 

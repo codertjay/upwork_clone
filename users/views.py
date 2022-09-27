@@ -207,4 +207,4 @@ class FreelancerDetailAPIView(RetrieveAPIView):
     permission_classes = [LoggedInPermission]
     serializer_class = UserProfileDetailSerializer
     queryset = UserProfile.objects.verified_freelancers_profiles()
-    lookup_field = "pk"
+    lookup_field = "id"

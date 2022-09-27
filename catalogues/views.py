@@ -71,7 +71,7 @@ class CatalogueRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     serializer_class = CatalogueDetailSerializer
     permission_classes = [LoggedInPermission]
-    lookup_field = 'pk'
+    lookup_field = 'id'
     queryset = Catalogue.objects.all()
 
     def update(self, request, *args, **kwargs):
@@ -130,12 +130,12 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
     """
     permission_classes = [LoggedInPermission]
     serializer_class = CatalogueItemSerializer
-    lookup_field = "pk"
+    lookup_field = "id"
 
     def get_object(self):
         """
         It returns an object of a catalogue item using the catalogue id and the catalogue
-        item pk to filter
+        item id to filter
         """
         catalogue_id = self.kwargs.get("catalogue_id")
         catalogue = Catalogue.objects.filter(id=catalogue_id).first()
@@ -143,7 +143,7 @@ class CatalogueItemRetrieveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
             #  if no catalogue i raise 404 page not found
             raise Http404
         catalogue_items = catalogue.catalogue_item_set.all()
-        return catalogue_items.filter(id=self.kwargs.get("pk")).first()
+        return catalogue_items.filter(id=self.kwargs.get("id")).first()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

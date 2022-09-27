@@ -32,7 +32,7 @@ class PlanRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Plan.objects.all()
     # will check if the user is staff on the update and destroy function below
     permission_classes = [LoggedInPermission]
-    lookup_field = "pk"
+    lookup_field = "id"
 
     def update(self, request, *args, **kwargs):
         # update the plan

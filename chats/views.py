@@ -36,4 +36,4 @@ class ChatRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     queryset = Chat.objects.all()
     serializer_class = ChatSerializer
     permission_classes = [LoggedInPermission]
-    lookup_field = "pk"
+    lookup_field = "id"

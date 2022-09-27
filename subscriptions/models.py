@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.utils import timezone
-
+import uuid
 from plans.models import Plan
 from subscriptions.utils import get_paypal_subscription_status, cancel_paypal_subscription
 
@@ -13,6 +13,8 @@ class UserSubscription(models.Model):
     """
     User subscription which is default set to free which has a foreign key to the subscription model
     """
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     user = models.OneToOneField(User, related_name='user_subscription', on_delete=models.CASCADE)
     #  if plan is  null then the user plan is known as free
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, blank=True, null=True)

@@ -118,7 +118,7 @@ class CommentRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
     """
     serializer_class = CommentCreateUpdateSerializer
     permission_classes = [NotLoggedInPermission]
-    lookup_field = "pk"
+    lookup_field = "id"
     queryset = Comment.objects.all()
 
     def retrieve(self, request, *args, **kwargs):
@@ -154,7 +154,7 @@ class CommentLikeAPIView(APIView):
         """helper function which enables us to get the comment through the id which passed in the url
         and if the comment does not exist i raise 404 error response
         """
-        comment_id = self.kwargs.get("pk")
+        comment_id = self.kwargs.get("id")
         comment = Comment.objects.filter(id=comment_id).first()
         if not comment:
             raise Http404

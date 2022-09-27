@@ -117,12 +117,12 @@ CATEGORY_ACTION_CHOICES = (
 class UpdateJobCategorySerializer(serializers.Serializer):
     """This is used to add or remove a category from a job or add a category """
     action = serializers.ChoiceField(choices=CATEGORY_ACTION_CHOICES)
-    category_id = serializers.IntegerField()
+    category_id = serializers.CharField()
 
 
 class CreateJobInviteSerializer(serializers.Serializer):
     """this is meant for creating a job invite"""
-    freelancer_id = serializers.IntegerField()
+    freelancer_id = serializers.CharField()
 
 
 class RetrieveJobInviteSerializer(serializers.ModelSerializer):
@@ -174,7 +174,7 @@ class ModifyProposalSerializer(serializers.Serializer):
     """
     this serializer is used for accepting a proposal  it requires the proposal  id
     """
-    proposal_id = serializers.IntegerField()
+    proposal_id = serializers.CharField()
     #  the action to modify a proposal
     action = serializers.ChoiceField(choices=PROPOSAL_STAGE_CHOICES)
 
