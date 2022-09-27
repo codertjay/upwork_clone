@@ -1,9 +1,11 @@
-from django.urls import path
+from .views import MessageViewSet, ConversationViewSet
+from rest_framework.routers import DefaultRouter
 
-from .views import ChatListCreateAPIView, ChatRetrieveUpdateDestroyAPIView
-
-urlpatterns = [
-    # Job routes
-    path("", ChatListCreateAPIView.as_view(), name="list_chats"),
-    path("<str:id>/", ChatRetrieveUpdateDestroyAPIView.as_view(), name="chat_retrieve_update_destroy"),
-]
+router = DefaultRouter()
+# conversation route
+router.register("conversations", ConversationViewSet)
+urlpatterns = router.urls
+#  message route
+router.register("messages", MessageViewSet)
+# add the messages users to the urlspatterns
+urlpatterns += router.urls

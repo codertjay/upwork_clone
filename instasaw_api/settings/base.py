@@ -58,6 +58,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "instasaw_api.wsgi.application"
+ASGI_APPLICATION = "instasaw_api.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases

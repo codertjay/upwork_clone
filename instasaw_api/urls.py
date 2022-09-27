@@ -18,14 +18,11 @@ urlpatterns = [
     path('api/v1/webhooks/', include("webhooks.urls")),
     path('api/v1/virtual_wallets/', include("virtual_wallets.urls")),
     path('api/v1/transactions/', include("transactions.urls")),
-    # todo: so many things to fix on the chat i didnt right comment also still testing
-    # path('api/v1/chats/', include("chats.urls"))
+    path('api/v1/chats/', include("chats.urls"))
 
 ]
 
-"""
-The authentication urls which contains login, register, request otp and verify account
-"""
+# The authentication urls which contains login, register, request otp and verify account
 auth_urlpatterns = [
     path("api/v1/auth/login/", InstasawLoginAPIView.as_view(), name="instasaw_login"),
     path("api/v1/auth/registration/", InstasawRegisterAPIView.as_view(), name="instasaw_register"),

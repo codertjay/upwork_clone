@@ -1,39 +1,46 @@
-from django.contrib.auth import get_user_model
-from django.http import Http404
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.viewsets import GenericViewSet
 
-from chats.models import Chat, Contact
-from chats.serializers import ChatSerializer
-from users.permissions import LoggedInPermission
+from .models import Conversation, Message
+from .paginators import MessagePagination
 
-User = get_user_model()
+from .serializers import MessageSerializer, ConversationSerializer
 
 
-class ChatListCreateAPIView(ListCreateAPIView):
-    permission_classes = [LoggedInPermission]
-    serializer_class = ChatSerializer
-
-    def get_user_contact(self, user_id):
-        """this returns all the contacts made by the user"""
-        user = User.objects.filter(id=user_id).first()
-        if not user:
-            raise Http404
-        contact = Contact.objects.filter(user=user).first()
-        if not contact:
-            raise Http404
-        return contact
+class ConversationViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
+    """
+    this list the conversations of the logged-in user
+    """
+    serializer_class = ConversationSerializer
+    queryset = Conversation.objects.none()
+    lookup_field = "name"
 
     def get_queryset(self):
-        """this returns all the chat """
-        user_id = self.request.query_params.get("user_id", None)
-        if not user_id:
-            raise Http404
-        contact = self.get_user_contact(user_id)
-        return contact.chat.all()
+        queryset = Conversation.objects.filter(
+            name__contains=self.request.user.id
+        )
+        return queryset
+
+    def get_serializer_context(self):
+        """this enables adding the context to a serializer"""
+        return {"request": self.request, "user": self.request.user}
 
 
-class ChatRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
-    queryset = Chat.objects.all()
-    serializer_class = ChatSerializer
-    permission_classes = [LoggedInPermission]
-    lookup_field = "id"
+class MessageViewSet(ListModelMixin, GenericViewSet):
+    """"
+    Returns
+    """
+    serializer_class = MessageSerializer
+    queryset = Message.objects.none()
+    pagination_class = MessagePagination
+
+    def get_queryset(self):
+        conversation_name = self.request.GET.get("conversation")
+        queryset = (
+            Message.objects.filter(
+                conversation__name__contains=self.request.user.username,
+            )
+            .filter(conversation__name=conversation_name)
+            .order_by("-timestamp")
+        )
+        return queryset

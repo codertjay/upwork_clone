@@ -13,7 +13,8 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 #  using the chats routing
-import chats.routing
+from chats import routing
+from chats.middleware import TokenAuthMiddleware
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "instasaw_api.settings")
 
@@ -21,13 +22,9 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "instasaw_api.settings")
 # is populated before importing code that may import ORM models.
 django_asgi_app = get_asgi_application()
 
-application = ProtocolTypeRouter({
-    "http": django_asgi_app,
-    "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(
-            URLRouter(
-                chats.routing.websocket_urlpatterns
-            )
-        )
-    ),
-})
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": TokenAuthMiddleware(URLRouter(routing.websocket_urlpatterns)),
+    }
+)
