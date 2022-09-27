@@ -223,6 +223,15 @@ CELERY_ENABLED = True
 CELERY_BROKER_URL = config("BROKER_URL")
 CELERY_RESULT_BACKEND = config("BROKER_URL")
 
+#
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(config("REDIS_HOST"), config("REDIS_PORT"))],
+        },
+    },
+}
 # PayPal price configuration
 #  get the default payout percent charge fee or set the default to 10
 PAYPAL_PAYOUT_PERCENT_FEE = config("PAYPAL_PAYOUT_PERCENT_FEE", 10)

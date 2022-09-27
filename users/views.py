@@ -140,7 +140,8 @@ class UserUpdateAPIView(APIView):
         #  check if the data passed is valid
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({'message': 'Successfully updated user', 'data': UserDetailSerializer(request.user).data}, status=200)
+        return Response({'message': 'Successfully updated user', 'data': UserDetailSerializer(request.user).data},
+                        status=200)
 
 
 class UserProfileUpdateAPIView(APIView):

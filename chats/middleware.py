@@ -2,8 +2,10 @@ from urllib.parse import parse_qs
 from channels.db import database_sync_to_async
 
 from django.contrib.auth import get_user_model
+from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import AccessToken
 
 User = get_user_model()
 
@@ -23,9 +25,8 @@ class TokenAuthentication:
     def get_model(self):
         if self.model is not None:
             return self.model
-        from rest_framework.authtoken.models import Token
-
-        return Token
+        from rest_framework_simplejwt.tokens import AccessToken
+        return AccessToken
 
     """
     A custom token model may be used, but must have the following properties.
@@ -35,16 +36,22 @@ class TokenAuthentication:
     """
 
     def authenticate_credentials(self, key):
-        model = self.get_model()
+        """
+        This is used to verify the user credentials using the token provided on the url
+        :param key:  the token key
+        :return:
+        """
+        token = AccessToken(token=key)
         try:
-            token = model.objects.select_related("user").get(key=key)
-        except model.DoesNotExist:
+            user_id = token.get("user_id")
+            if not user_id:
+                raise AuthenticationFailed("Invalid token")
+            user = User.objects.get(id=user_id)
+        except Exception as a:
             raise AuthenticationFailed(_("Invalid token."))
-
-        if not token.user.is_active:
+        if not user.is_active:
             raise AuthenticationFailed(_("User inactive or deleted."))
-
-        return token.user
+        return user
 
 
 @database_sync_to_async
@@ -62,7 +69,9 @@ def get_user(scope):
             "Cannot find token in scope. You should wrap your consumer in "
             "TokenAuthMiddleware."
         )
-    token = scope["token"]
+    token = scope["token"][0]
+    if not token:
+        raise AuthenticationFailed("No token passed on params")
     user = None
     try:
         auth = TokenAuthentication()
@@ -87,7 +96,7 @@ class TokenAuthMiddleware:
         # checking if it is a valid user ID, or if scope["user"] is already
         # populated).
         query_params = parse_qs(scope["query_string"].decode())
-        token = query_params["token"][0]
+        token = query_params.get("token")
         scope["token"] = token
         scope["user"] = await get_user(scope)
         return await self.app(scope, receive, send)

@@ -4,10 +4,9 @@ from uuid import UUID
 from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from channels.generic.websocket import JsonWebsocketConsumer
-from conversa_dj.chats.api.serializers import MessageSerializer
+from chats.serializers import MessageSerializer
 
-from conversa_dj.chats.models import Conversation, Message
-
+from chats.models import Conversation, Message
 
 User = get_user_model()
 
@@ -53,7 +52,7 @@ class ChatConsumer(JsonWebsocketConsumer):
         self.send_json(
             {
                 "type": "online_user_list",
-                "users": [user.username for user in self.conversation.online.all()],
+                "users": [user.id for user in self.conversation.online.all()],
             }
         )
 
@@ -61,7 +60,7 @@ class ChatConsumer(JsonWebsocketConsumer):
             self.conversation_name,
             {
                 "type": "user_join",
-                "user": self.user.username,
+                "user": self.user.id,
             },
         )
 
@@ -125,7 +124,6 @@ class ChatConsumer(JsonWebsocketConsumer):
             )
 
         if message_type == "chat_message":
-
             message = Message.objects.create(
                 from_user=self.user,
                 to_user=self.get_receiver(),

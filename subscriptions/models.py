@@ -18,7 +18,7 @@ class UserSubscription(models.Model):
     user = models.OneToOneField(User, related_name='user_subscription', on_delete=models.CASCADE)
     #  if plan is  null then the user plan is known as free
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, blank=True, null=True)
-    paypal_subscription_id = models.CharField(max_length=250, blank=True, null=True, unique=True)
+    paypal_subscription_id = models.CharField(max_length=250, blank=True, null=True)
     # last time a user made payment
     last_payed = models.DateTimeField(blank=True, null=True)
     cancel_on_next = models.BooleanField(default=False)
@@ -74,7 +74,6 @@ class UserSubscription(models.Model):
         self.plan = free_subscription
         if self.paypal_subscription_id:
             self.cancel_paypal_subscription()
-        self.paypal_subscription_id = None
         self.save()
 
 
@@ -85,7 +84,9 @@ def post_save_create_user_subscription(sender, instance, *args, **kwargs):
     :param instance:  the user created or updated
     """
     if instance:
-        user_subscription, created = UserSubscription.objects.get_or_create(user=instance)
+        user_subscription = UserSubscription.objects.filter(user=instance).first()
+        if not user_subscription:
+            user_subscription = UserSubscription.objects.create(user=instance)
         if not user_subscription.plan:
             # setting the user plan to free if the user was newly created or the user has no plan
             user_subscription.convert_user_subscription_to_free()

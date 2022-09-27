@@ -95,7 +95,7 @@ def create_paypal_plan(amount, name, interval):
                     "total_cycles": 0,
                     "pricing_scheme": {
                         "fixed_price": {
-                            "value": int(amount),
+                            "value": f"{amount}",
                             "currency_code": "USD"
                         }
                     }
@@ -134,7 +134,7 @@ def update_paypal_plan_amount(amount, plan_id):
                     "billing_cycle_sequence": 1,
                     "pricing_scheme": {
                         "fixed_price": {
-                            "value": int(amount),
+                            "value": f"{amount}",
                             "currency_code": "USD"
                         },
                         "roll_out_strategy": {

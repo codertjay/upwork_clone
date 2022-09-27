@@ -29,6 +29,8 @@ EXTERNAL_INSTALLED_APPS = [
     #  this filter app enables you to make custome query like
     # http://example.com/api/products/4675/?category=clothing&max_price=10.00
     'django_filters',
+    #  this is used for django channels
+    'channels'
 ]
 
 LOCAL_INSTALLED_APPS = [

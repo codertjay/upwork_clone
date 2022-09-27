@@ -74,7 +74,7 @@ def post_save_create_plan(sender, instance, *args, **kwargs):
             if instance.plan_type == "PLATINUM":
                 #  Setting the interval for PLATINUM
                 interval = "Year"
-            if not instance.paypal_plan_id:
+            if not instance.paypal_plan_id and instance.plan_type != "FREE":
                 #  create the plan if we haven't created it .
                 #  we first check if paypal_plan_id doesn't exist to prevent duplicate
                 plan_id = create_paypal_plan(
