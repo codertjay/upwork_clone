@@ -11,8 +11,8 @@ class Conversation(models.Model):
     this is more of like a room where users contact each other .
     we use the user1_id__user2__id to create the name of the conversation
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=128)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
+    name = models.CharField(max_length=300)
     online = models.ManyToManyField(to=User, blank=True)
 
     def get_online_count(self):
@@ -35,9 +35,9 @@ class Conversation(models.Model):
 
 class Message(models.Model):
     """
-    the message which is gotten by accessing the converation set
+    the message which is gotten by accessing the conversation set
     """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )

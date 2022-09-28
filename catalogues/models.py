@@ -14,7 +14,7 @@ class Catalogue(models.Model):
     The catalogue is project type which has sub items that list all items under it
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=250)
     image = models.ImageField(upload_to="catalogue")
@@ -36,7 +36,7 @@ class CatalogueItem(models.Model):
     a catalogue has many catalogue_item
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE)
     catalogue = models.ForeignKey(Catalogue, on_delete=models.CASCADE, related_name="catalogue_item_set")
     name = models.CharField(max_length=250)

@@ -26,7 +26,7 @@ class Transaction(models.Model):
     The transaction that takes place for every funding and crediting for wallet
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     user = models.ForeignKey(User, related_name="transactions", on_delete=models.CASCADE)
     #  the transaction id is gotten by an external provider
     transaction_id = models.CharField(max_length=250, blank=True, null=True)

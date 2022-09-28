@@ -14,7 +14,7 @@ class UserSubscription(models.Model):
     User subscription which is default set to free which has a foreign key to the subscription model
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     user = models.OneToOneField(User, related_name='user_subscription', on_delete=models.CASCADE)
     #  if plan is  null then the user plan is known as free
     plan = models.ForeignKey(Plan, on_delete=models.SET_NULL, blank=True, null=True)
@@ -38,8 +38,11 @@ class UserSubscription(models.Model):
                 if not paypal_subscription_status:
                     self.convert_user_subscription_to_free()
         elif not self.plan:
-            #  if the user has no plan
-            self.convert_user_subscription_to_free()
+            #  if the user has no plan then we use the free plan for the user
+            free_subscription, created = Plan.objects.get_or_create(
+                plan_type="FREE",
+                name="FREE")
+            self.plan = free_subscription
         return super(UserSubscription, self).save(*args, **kwargs)
 
     @property
@@ -87,9 +90,6 @@ def post_save_create_user_subscription(sender, instance, *args, **kwargs):
         user_subscription = UserSubscription.objects.filter(user=instance).first()
         if not user_subscription:
             user_subscription = UserSubscription.objects.create(user=instance)
-        if not user_subscription.plan:
-            # setting the user plan to free if the user was newly created or the user has no plan
-            user_subscription.convert_user_subscription_to_free()
 
 
 post_save.connect(post_save_create_user_subscription, sender=User)

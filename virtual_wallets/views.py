@@ -102,7 +102,7 @@ class WithdrawFundAPIView(APIView):
 
         # create a transaction with an instance . which enable use to dynamically add fields base on the response
         transaction = Transaction()
-        transaction.transaction_id = uuid.uuid4().hex
+        transaction.transaction_id =uuid.uuid4()
         transaction.user = request.user
         transaction.current_balance = user_wallet.balance
         transaction.previous_balance = previous_balance

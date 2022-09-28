@@ -24,7 +24,7 @@ class Plan(models.Model):
     Available subscription type for the users to choose it more of like  plan
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     name = models.CharField(max_length=250)
     # making it unique to prevent staff from creating deplicate subscription type
     plan_type = models.CharField(max_length=50, choices=PLAN_TYPE_CHOICES, unique=True)

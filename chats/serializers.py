@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from chats.models import Message, Conversation
-from users.serializers import UserSerializer
-
+from users.serializers import UserSerializer, UserProfileSerializer
 
 User = get_user_model()
 
@@ -43,6 +42,10 @@ class ConversationSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "other_user", "last_message")
 
     def get_last_message(self, obj):
+        """
+        this get the last message sent from the conversation
+
+        """
         messages = obj.messages.all().order_by("-timestamp")
         if not messages.exists():
             return None
@@ -50,10 +53,16 @@ class ConversationSerializer(serializers.ModelSerializer):
         return MessageSerializer(message).data
 
     def get_other_user(self, obj):
-        usernames = obj.name.split("__")
+        """
+        this enables getting the other user of a message using the id of the user from the
+        conversation name
+        :param obj:
+        :return:
+        """
+        user_ids = obj.name.split("__")
         context = {}
-        for username in usernames:
-            if username != self.context["user"].username:
+        for user_id in user_ids:
+            if user_id != self.context["user"].id:
                 # This is the other participant
-                other_user = User.objects.get(username=username)
-                return UserSerializer(other_user, context=context).data
+                other_user = User.objects.get(id=user_id)
+                return UserProfileSerializer(other_user.user_profile, context=context).data

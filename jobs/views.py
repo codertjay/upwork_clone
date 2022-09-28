@@ -458,7 +458,7 @@ class CreateContractAPIView(APIView):
         #  Create a transaction for the customer
         transaction = Transaction.objects.create(
             user=self.request.user,
-            transaction_id=uuid.uuid4().hex,
+            transaction_id=uuid.uuid4(),
             amount=amount,
             transaction_stage="SUCCESSFUL",
             transaction_type="DEBIT",
@@ -586,7 +586,7 @@ class MarkContractCompletedAPIView(APIView):
                 previous_balance=freelancer_previous_balance,
                 current_balance=freelancer_wallet.balance,
                 user=contract.freelancer,
-                transaction_id=uuid.uuid4().hex,
+                transaction_id=uuid.uuid4(),
                 transaction_category="AMOUNT FUNDING",
                 transaction_type="CREDIT",
                 transaction_stage="FAILED",
@@ -602,7 +602,7 @@ class MarkContractCompletedAPIView(APIView):
             previous_balance=freelancer_previous_balance,
             current_balance=freelancer_wallet.balance,
             user=contract.freelancer,
-            transaction_id=uuid.uuid4().hex,
+            transaction_id=uuid.uuid4(),
             transaction_category="AMOUNT FUNDING",
             transaction_type="CREDIT",
             transaction_stage="SUCCESSFUL",

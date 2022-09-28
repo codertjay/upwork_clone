@@ -17,7 +17,7 @@ class Wallet(models.Model):
     and the user current balance which can be withdrawn
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     user = models.OneToOneField(User, related_name="wallet", on_delete=models.CASCADE)
 
     balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)

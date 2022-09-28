@@ -63,7 +63,7 @@ class UserSubscriptionAPIView(APIView):
             previous_balance=self.request.user.wallet.balance,
             current_balance=self.request.user.wallet.balance,
             user=self.request.user,
-            transaction_id=uuid.uuid4().hex,
+            transaction_id=uuid.uuid4(),
             transaction_category="SUBSCRIPTION",
             transaction_type="DEBIT",
             transaction_stage="SUCCESSFUL",

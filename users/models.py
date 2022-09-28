@@ -66,7 +66,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     the username field is converted to use the email field
     """
     id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+        primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     # this tells django the username field because sometimes you can change it to email or username itself
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name', 'user_type']
