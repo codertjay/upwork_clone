@@ -1,5 +1,0 @@
-redis:
-  image: redis:6
-  container_name: instasaw_api
-  ports:
-    - "6379:6379"

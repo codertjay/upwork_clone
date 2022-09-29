@@ -1,0 +1,2 @@
+daphne_entrypoint.sh: 3: cd: can't cd to /app/
+daphne_entrypoint.sh: 4: /opt/venv/bin/daphne: not found

@@ -25,7 +25,7 @@ DATABASES = {
         'USER': config('POSTGRESDB_USER', default=''),
         'PASSWORD': config('POSTGRESDB_PASSWORD', default=''),
         'HOST': config('POSTGRESDB_HOST', default=''),
-        'PORT': '',
+        'PORT': config('POSTGRESDB_HOST', default=''),
     }
 }
 

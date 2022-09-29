@@ -1,0 +1,93 @@
+version: "3.9"
+services:
+  instasaw_api:
+    #  it depends on the postgres and redis
+    depends_on:
+      - postgres_db
+      - redis_db
+    build:
+      # location of the project in our folder
+      context: .
+      dockerfile: Dockerfile
+    #  the name of the image
+    image: instasaw_api
+    # my env file
+    environment:
+      - PORT=8020
+    env_file:
+      - .env
+    ports:
+      - "8020:8001"
+      - "8020:8002"
+    command: sh -c "chmod +x /app/migrate.sh"
+
+  postgres_db:
+    image: postgres
+    restart: always
+    env_file:
+      - .env
+    command: -p 5432
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  
+  redis_db:
+    image: redis
+    restart: always
+    expose:
+      - 6380
+    ports:
+      - "6380:6380"
+    volumes:
+      - redis_data:/data
+    entrypoint: redis-server --appendonly yes --port 6380
+  
+  gunicorn:
+    build:
+      context: .
+    depends_on:
+      - instasaw_api
+    expose:
+      - 8001
+    ports:
+      - "8001:8001"
+    command: sh -c "chmod +x /app/daphne_entrypoint.sh"
+  
+  daphne:
+    build:
+      context: .
+    depends_on:
+      - instasaw_api
+    expose:
+      - 8002
+    ports:
+      - "8002:8002"
+    command: sh -c "chmod +x  /app/gunicorn_entrypoint.sh"
+
+
+  celery:
+    build: 
+      context: .
+    depends_on:
+      - redis_db
+      - instasaw_api
+    command: "celery -A instasaw_api worker  --loglevel=info"
+ 
+  celery_schedule:
+    build: 
+      context: .
+    depends_on:
+      - redis_db
+      - instasaw_api
+    command: "celery -A instasaw_api beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+
