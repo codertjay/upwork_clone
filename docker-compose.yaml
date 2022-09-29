@@ -16,9 +16,9 @@ services:
       - PORT=8020
     env_file:
       - .env
-    ports:
-      - "8020:8001"
-      - "8020:8002"
+    # ports:
+    #   - "8020:8001"
+    #   - "8020:8002"
     command: sh -c "chmod +x /app/migrate.sh"
 
   postgres_db:
