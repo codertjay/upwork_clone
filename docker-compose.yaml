@@ -13,13 +13,16 @@ services:
     image: instasaw_api
     # my env file
     environment:
-      - PORT=8020
+      - PORT=8000
+    volumes:
+      - staticfiles:/staticfiles
     env_file:
       - .env
-    # ports:
-    #   - "8020:8001"
-    #   - "8020:8002"
-    command: sh -c "chmod +x /app/migrate.sh"
+    expose:
+      - 8001
+    ports:
+      - "8001:8000"
+    command: sh -c "sh /app/migrate.sh && sh /app/daphne_entrypoint.sh"
 
   postgres_db:
     image: postgres
@@ -38,56 +41,40 @@ services:
     image: redis
     restart: always
     expose:
-      - 6380
+      - 6379
     ports:
-      - "6380:6380"
+      - "6379:6379"
     volumes:
       - redis_data:/data
-    entrypoint: redis-server --appendonly yes --port 6380
-  
-  gunicorn:
-    build:
-      context: .
-    depends_on:
-      - instasaw_api
-    expose:
-      - 8001
-    ports:
-      - "8001:8001"
-    command: sh -c "chmod +x /app/daphne_entrypoint.sh"
-  
-  daphne:
-    build:
-      context: .
-    depends_on:
-      - instasaw_api
-    expose:
-      - 8002
-    ports:
-      - "8002:8002"
-    command: sh -c "chmod +x  /app/gunicorn_entrypoint.sh"
-
+    entrypoint: redis-server --appendonly yes --port 6379
 
   celery:
+    env_file:
+      - .env
     build: 
       context: .
     depends_on:
       - redis_db
+      - postgres_db
       - instasaw_api
-    command: "celery -A instasaw_api worker  --loglevel=info"
+    command: sh -c "chmod +x  /app/celery_command.sh && sh /app/celery_command.sh"
  
   celery_schedule:
+    env_file:
+      - .env
     build: 
       context: .
     depends_on:
       - redis_db
       - instasaw_api
-    command: "celery -A instasaw_api beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+      - postgres_db
+    command: sh -c "chmod +x  /app/celery_schedule_command.sh && sh /app/celery_schedule_command.sh"
     
 
 volumes:
   postgres_data:
   redis_data:
+  staticfiles:
 
 
 

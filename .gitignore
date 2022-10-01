@@ -19,3 +19,17 @@ users/migrations
 templates/test_paypal_subscription.html
 templates/test_paypal_fund_button.html
 /*/migrations/*
+
+__pycache__
+
+
+# pyflow
+__pypackages__/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+test_json.json
