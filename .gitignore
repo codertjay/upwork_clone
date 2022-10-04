@@ -1,26 +1,18 @@
 venv
 .idea
-users/migrations
-/jobs/migrations/
-/catalogues/migrations/
-/blogs/migrations/
-/messages/migrations/
 .env
 /db.sqlite3
-/categorys/migrations/
 /staticfiles/
 /media/catalogue/
 /media/catalogue_item/
 /media/
-/memberships/migrations/
-/subscriptions/migrations/
 */__pycache__/*
 
 templates/test_paypal_subscription.html
 templates/test_paypal_fund_button.html
-/*/migrations/*
 
 __pycache__
+
 
 
 # pyflow
