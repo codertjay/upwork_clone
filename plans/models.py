@@ -31,7 +31,7 @@ class Plan(models.Model):
     #  the status of the subscription
     plan_status = models.CharField(max_length=50, choices=PLAN_STATUS, default="ACTIVE")
     paypal_plan_id = models.CharField(blank=True, null=True, max_length=1000)
-    price = models.DecimalField(decimal_places=2, null=True, blank=True, max_digits=99999)
+    price = models.DecimalField(decimal_places=2, null=True, blank=True, max_digits=1000)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
     class Meta:

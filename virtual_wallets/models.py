@@ -20,9 +20,9 @@ class Wallet(models.Model):
         primary_key=True, default=uuid.uuid4(), editable=False, unique=True)
     user = models.OneToOneField(User, related_name="wallet", on_delete=models.CASCADE)
 
-    balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
+    balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=1000)
     #  having issues managing the ledger balance since i don't have a wallet id to check
-    # ledger_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
+    # ledger_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=1000)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
     class Meta:

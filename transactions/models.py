@@ -34,9 +34,9 @@ class Transaction(models.Model):
     transaction_stage = models.CharField(choices=TRANSACTION_STAGE, max_length=50)
     transaction_category = models.CharField(choices=TRANSACTION_CATEGORY, max_length=50)
 
-    amount = models.DecimalField(max_digits=100000000000, decimal_places=2)
-    previous_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
-    current_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=10000000)
+    amount = models.DecimalField(max_digits=1000, decimal_places=2)
+    previous_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=1000)
+    current_balance = models.DecimalField(default=0.00, decimal_places=2, max_digits=1000)
     timestamp = models.DateTimeField(auto_now_add=timezone.now)
 
     class Meta:

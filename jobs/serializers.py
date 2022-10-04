@@ -184,7 +184,7 @@ class CreateContractSerializer(serializers.Serializer):
     this serializer is used to creating contract on a job post
     """
     proposal_id = serializers.CharField(max_length=250)
-    amount = serializers.DecimalField(max_digits=100000000, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=1000, decimal_places=2)
     start_date = serializers.DateField()
     end_date = serializers.DateField()
 

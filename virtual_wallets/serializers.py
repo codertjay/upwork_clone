@@ -24,7 +24,7 @@ class CreatePaymentSerializer(serializers.Serializer):
     this serializer is used to fund the wallet using PayPal
     used by the Create payment class
     """
-    amount = serializers.DecimalField(max_digits=100000000, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=1000, decimal_places=2)
 
 
 class ApprovePaymentSerializer(serializers.Serializer):
@@ -40,5 +40,5 @@ class WithdrawFundSerializer(serializers.Serializer):
      the email address of his existing paypal account, or he would need to create
      a paypal account with that email to withdraw the fund
      """
-    amount = serializers.DecimalField(max_digits=100000000, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=1000, decimal_places=2)
     otp = serializers.IntegerField(min_value=1000)

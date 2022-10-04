@@ -172,7 +172,7 @@ class Contract(models.Model):
     freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="contract_freelancers")
     #  a job can have only one contract
     job = models.OneToOneField(Job, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10000000, decimal_places=2)
+    amount = models.DecimalField(max_digits=1000, decimal_places=2)
     completed = models.BooleanField(default=False)
     start_date = models.DateField()
     end_date = models.DateField()
