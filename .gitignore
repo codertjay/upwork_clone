@@ -13,7 +13,7 @@ templates/test_paypal_fund_button.html
 
 __pycache__
 
-
+*/migrations/*
 
 # pyflow
 __pypackages__/
