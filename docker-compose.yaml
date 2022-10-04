@@ -29,11 +29,11 @@ services:
     restart: always
     env_file:
       - .env
-    command: -p 5432
+    command: -p 5433
     expose:
-      - 5432
+      - 5433
     ports:
-      - "5432:5432"
+      - "5433:5433"
     volumes:
       - postgres_data:/var/lib/postgresql/data
   
@@ -41,12 +41,12 @@ services:
     image: redis
     restart: always
     expose:
-      - 6379
+      - 6380
     ports:
-      - "6379:6379"
+      - "6380:6380"
     volumes:
       - redis_data:/data
-    entrypoint: redis-server --appendonly yes --port 6379
+    entrypoint: redis-server --appendonly yes --port 6380
 
   celery:
     env_file:

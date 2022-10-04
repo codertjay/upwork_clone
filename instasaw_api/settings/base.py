@@ -208,12 +208,12 @@ this is used by the package djangorestframework-simplejwt==5.2.0 for providing
 jwt authentication and also modifying the time which the token expires
 """
 SIMPLE_JWT = {
-
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=10),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=10),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': True,
+    'SIGNING_KEY': SECRET_KEY
 }
 
 APPEND_SLASH = True

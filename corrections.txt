@@ -37,7 +37,10 @@ see jobs but can make proposal
 
 
 
+CREATE DATABASE instasaw_api_db;
+CREATE USER instasaw WITH PASSWORD 'inst1s1w#@pasqitp';
+ALTER ROLE instasaw SET client_encoding TO 'utf8';
+ALTER ROLE instasaw SET default_transaction_isolation TO 'read committed';
+ALTER ROLE instasaw SET timezone TO 'UTC';
 
-
-
-
+GRANT ALL PRIVILEGES ON DATABASE instasaw_api_db TO instasaw;
