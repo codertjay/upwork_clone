@@ -6,6 +6,7 @@ print('Using local')
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+SECRET_KEY = config("SECRET_KEY")
 
 DATABASES = {
     'default': {
@@ -13,6 +14,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 PAYPAL_CLIENT_ID = config('DEBUG_PAYPAL_CLIENT_ID')
 PAYPAL_SECRET_KEY = config('DEBUG_PAYPAL_SECRET_KEY')

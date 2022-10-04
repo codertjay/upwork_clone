@@ -3,6 +3,7 @@ from .base import *
 print('Using production')
 
 DEBUG = False
+SECRET_KEY = config("SECRET_KEY")
 
 # fixme: remove later to the domain or ipaddress
 ALLOWED_HOSTS = ["*"]
