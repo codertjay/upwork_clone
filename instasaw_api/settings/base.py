@@ -229,9 +229,3 @@ CHANNEL_LAYERS = {
 # PayPal price configuration
 #  get the default payout percent charge fee or set the default to 10
 PAYPAL_PAYOUT_PERCENT_FEE = config("PAYPAL_PAYOUT_PERCENT_FEE", 10)
-
-# django cors headers allwoed origins
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",
-    "http://127.0.0.1:9000",
-]

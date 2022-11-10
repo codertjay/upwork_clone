@@ -35,3 +35,11 @@ DATABASES = {
 PAYPAL_CLIENT_ID = config('PAYPAL_CLIENT_ID')
 PAYPAL_SECRET_KEY = config('PAYPAL_SECRET_KEY')
 PAYPAL_URL = config('PAYPAL_URL')
+
+
+
+# django cors headers allwoed origins
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8080",
+    "http://127.0.0.1:9000",
+]
