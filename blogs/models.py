@@ -11,7 +11,7 @@ User = settings.AUTH_USER_MODEL
 
 class BlogCategory(models.Model):
     """This category is meant for only the blog post it is different from the category for job post and catalogue
-    Reason why i created a new one is to prevent users from seeing blog categorys
+    Reason why I created a new one is to prevent users from seeing blog categorys
      which could not be appropriate for the nomal category like shirt
     """
     id = models.UUIDField(

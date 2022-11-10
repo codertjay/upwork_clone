@@ -16,7 +16,5 @@ RUN python3 -m venv /opt/venv
 #  which are currently gunicorn_entrypoint and daphne_entrypoint
 
 RUN /opt/venv/bin/pip install pip --upgrade && \
-    /opt/venv/bin/pip install -r requirements.txt  && chmod +x /app/migrate.sh && chmod +x  /app/daphne_entrypoint.sh
-
-# # Run this command in the cmd
-# CMD ["./app/gunicorn_entrypoint.sh"]
+    /opt/venv/bin/pip install -r requirements.txt  && chmod +x /app/migrate.sh \
+     && chmod +x  /app/runserver.sh

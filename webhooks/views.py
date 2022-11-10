@@ -111,42 +111,40 @@ class WebhookEventDetailAPIView(RetrieveAPIView):
     lookup_field = "id"
 
 
-
 {
-  "payout_item_id": "8AELMXH8UB2P8",
-  "transaction_id": "0C413693MN970190K",
-  "activity_id": "0E158638XS0329106",
-  "transaction_status": "SUCCESS",
-  "payout_item_fee": {
-    "currency": "USD",
-    "value": "0.35"
-  },
-  "payout_batch_id": "Q8KVJG9TZTNN4",
-  "payout_item": {
-    "amount": {
-      "value": "9.87",
-      "currency": "USD"
+    "payout_item_id": "8AELMXH8UB2P8",
+    "transaction_id": "0C413693MN970190K",
+    "activity_id": "0E158638XS0329106",
+    "transaction_status": "SUCCESS",
+    "payout_item_fee": {
+        "currency": "USD",
+        "value": "0.35"
     },
-    "recipient_type": "EMAIL",
-    "note": "Thanks for your patronage!",
-    "receiver": "receiver@example.com",
-    "sender_item_id": "14Feb_234"
-  },
-  "time_processed": "2018-01-27T10:17:41Z",
-  "links": [
-    {
-      "rel": "self",
-      "href": "https://api-m.sandbox.paypal.com/v1/payments/payouts-item/8AELMXH8UB2P8",
-      "method": "GET"
+    "payout_batch_id": "Q8KVJG9TZTNN4",
+    "payout_item": {
+        "amount": {
+            "value": "9.87",
+            "currency": "USD"
+        },
+        "recipient_type": "EMAIL",
+        "note": "Thanks for your patronage!",
+        "receiver": "receiver@example.com",
+        "sender_item_id": "14Feb_234"
     },
-    {
-      "href": "https://api-m.sandbox.paypal.com/v1/payments/payouts/Q8KVJG9TZTNN4",
-      "rel": "batch",
-      "method": "GET"
-    }
-  ]
+    "time_processed": "2018-01-27T10:17:41Z",
+    "links": [
+        {
+            "rel": "self",
+            "href": "https://api-m.sandbox.paypal.com/v1/payments/payouts-item/8AELMXH8UB2P8",
+            "method": "GET"
+        },
+        {
+            "href": "https://api-m.sandbox.paypal.com/v1/payments/payouts/Q8KVJG9TZTNN4",
+            "rel": "batch",
+            "method": "GET"
+        }
+    ]
 }
-
 
 {'id': 'WH-64R10817XA050051G-3RL93107GC167834E', 'event_version': '1.0', 'create_time': '2022-09-21T10:27:08.853Z',
  'resource_type': 'payouts', 'event_type': 'PAYMENT.PAYOUTSBATCH.SUCCESS',

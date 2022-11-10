@@ -22,7 +22,7 @@ services:
       - 8001
     ports:
       - "8001:8000"
-    command: sh -c "sh /app/migrate.sh && sh /app/daphne_entrypoint.sh"
+    command: sh -c "sh /app/migrate.sh && sh /app/runserver.sh"
 
   postgres_db:
     image: postgres

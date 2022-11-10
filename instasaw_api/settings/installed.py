@@ -30,7 +30,9 @@ EXTERNAL_INSTALLED_APPS = [
     # http://example.com/api/products/4675/?category=clothing&max_price=10.00
     'django_filters',
     #  this is used for django channels
-    'channels'
+    'channels',
+
+    "corsheaders",
 ]
 
 LOCAL_INSTALLED_APPS = [
