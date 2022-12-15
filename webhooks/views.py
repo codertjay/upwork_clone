@@ -6,7 +6,7 @@ from transactions.models import Transaction
 from users.permissions import LoggedInPermission, LoggedInStaffPermission
 from webhooks.models import Webhook, WebhookEvent
 from webhooks.serializers import CreateWebhookSerializer, DeleteWebhookSerializer, WebhookEventSerializer
-from webhooks.utils import create_webhook, delete_webhook
+from webhooks.utils import create_webhook, delete_webhook, list_webhook
 
 
 class CreateWebhookAPIView(APIView):
@@ -35,6 +35,8 @@ class DeleteWebhookAPIView(APIView):
     permission_classes = [LoggedInPermission & LoggedInStaffPermission]
 
     def post(self, request, *args, **kwargs):
+        # For debugging to list the webhook is if it exists
+        print(list_webhook())
         serializer = DeleteWebhookSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         webhook_id = serializer.validated_data.get("webhook_id")
@@ -72,21 +74,37 @@ class ListenToWebhookEventAPIView(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        webhook = WebhookEvent.objects.create(event_id=request.data.get("id"),
-                                              webhook_event=request.data)
-        # this is only for failed payout
-        if data.get("event_type") == "PAYMENT.PAYOUTS-ITEM.FAILED":
+        webhook, created = WebhookEvent.objects.get_or_create(event_id=request.data.get("id"),
+                                                              webhook_event=request.data)
+        # This is meant for payout when the user withdraws money from their account
+        if data.get("resource_type") == "payouts_item":
             #  to be very sure I need to check if the status is really FAILED
-            if data.get("resource").get("transaction_status") == "FAILED":
-                transaction_id = data.get("resource").get("sender_batch_id")
-                transaction = Transaction.objects.filter(transaction_id=transaction_id,
-                                                         transaction_stage="PROCESSING").first()
-                if transaction:
-                    # refund the money of the user
-                    transaction.refund_balance()
-                    return Response(status=200)
-        # check the event type if it was successful
-        if data.get("event_type") == "PAYMENT.PAYOUTSBATCH.SUCCESS":
+            transaction_id = data.get("resource").get("sender_batch_id")
+            transaction = Transaction.objects.filter(transaction_id=transaction_id).first()
+            if not transaction:
+                return Response(status=200)
+            transaction_stage = data.get("resource").get("transaction_status")
+            if (
+                    transaction_stage == "FAILED" or
+                    transaction_stage == "RETURNED" or
+                    transaction_stage == "REFUNDED" or
+                    transaction_stage == "REVERSED" or
+                    transaction_stage == "BLOCKED"
+            ):
+                # refund the money of the user
+                transaction.refund_balance()
+                transaction.transaction_stage = "FAILED"
+                transaction.save()
+            elif transaction_stage == "UNCLAIMED":
+                # If the money has not been claimed after
+                transaction.transaction_stage = "PROCESSING"
+                transaction.save()
+            elif transaction_stage == "SUCCESSFUL":
+                # If the transaction was successful
+                transaction.transaction_stage = "SUCCESSFUL"
+                transaction.save()
+        # Lets check for subscription if auto subscribe failed
+        elif data.get("resource_type") == "payouts_item":
             pass
 
         return Response(status=200)

@@ -10,6 +10,7 @@ class PlanCreateAPIView(CreateAPIView):
     """Create a new plan for users and can only be created by the staff members"""
     serializer_class = PlanSerializer
     permission_classes = [LoggedInPermission & LoggedInStaffPermission]
+    queryset = Plan.objects.all()
 
 
 class PlanListAPIView(ListAPIView):

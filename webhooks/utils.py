@@ -51,6 +51,25 @@ def delete_webhook(webhook_id):
     return False
 
 
+def list_webhook():
+    """
+    this function delete webhook on PayPal to enable this projects listen to some special events we need
+    """
+    access_token = get_paypal_access_token()
+    headers = {"Content-Type": "application/json",
+               "Authorization": f'Bearer {access_token}'
+               }
+    url = f"{PAYPAL_URL}v1/notifications/webhooks"
+    response = requests.request(
+        'GET', f"{url}",
+        json={},
+        headers=headers)
+    print(response.json())
+    if response.status_code == 200:
+        return True
+    return False
+
+
 {'id': '2AM78778P1057681D', 'url': 'https://api-m.sandbox.paypal.com/v1/notifications/webhooks',
  'event_types': [{'name': '*', 'description': 'ALL'}], 'links': [
     {'href': 'https://api.sandbox.paypal.com/v1/notifications/webhooks/2AM78778P1057681D', 'rel': 'self',
